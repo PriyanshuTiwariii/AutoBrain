@@ -120,7 +120,7 @@ def test_golden_2_ground_clearance_not_stated(dataset: Dataset):
 
 def test_golden_3_eligible_set(dataset: Dataset):
     needs = Needs(
-        budget_max_inr=2500000, seats_min=7, daily_km=40, home_charging="yes",
+        budget_max_inr=2500000, seats_min=7, daily_km=40, longest_regular_trip_km=300, home_charging="yes",
     )
     eligible = _eligible_keys(dataset, needs)
     expected = {
@@ -133,7 +133,7 @@ def test_golden_3_eligible_set(dataset: Dataset):
 def test_golden_3_ncap_and_charger_flags(dataset: Dataset):
     """Both show 'No Bharat NCAP crash test' and the ~₹60,000 charger note."""
     needs = Needs(
-        budget_max_inr=2500000, seats_min=7, daily_km=40, home_charging="yes",
+        budget_max_inr=2500000, seats_min=7, daily_km=40, longest_regular_trip_km=300, home_charging="yes",
     )
     eligible = _eligible_keys(dataset, needs)
     for key in eligible:

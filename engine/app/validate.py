@@ -26,6 +26,7 @@ REQUIRED_VARIANT_COLS = {
     "pricing_type", "price_inr", "price_status", "battery_kwh",
     "drive", "seats", "seat_options",
     "range_claimed_km", "range_maker_realworld_km", "range_tested_km",
+    "range_test_vehicle", "range_test_note",
     "efficiency_km_per_kwh", "efficiency_basis",
     "charger_included", "charger_cost_inr", "charger_basis",
     "airbags", "esp", "adas", "camera", "sunroof",
@@ -63,6 +64,8 @@ COMPLETENESS_ENUM_FIELDS = [
     "adaptive_suspension", "charger_included", "ncap_status",
     "battery_warranty",
 ]
+
+RANGE_TEST_VEHICLES = {"Same model", "Earlier version", "Not tested"}
 
 _UNKNOWN_VALUES = {"Not stated", "Not listed"}
 
@@ -229,6 +232,19 @@ def validate_release(release_dir: Path) -> ValidationReport:
             val = row.get(field, "")
             if val and val not in allowed:
                 warnings.append(f"{vk}: {field}={val!r} not in allowed set")
+
+    # --- Critical: a tested figure must say which car it was tested on ---
+    for row in variant_rows:
+        vk = row.get("variant_key", "?")
+        vehicle = row.get("range_test_vehicle", "")
+        if vehicle not in RANGE_TEST_VEHICLES:
+            critical.append(f"{vk}: range_test_vehicle={vehicle!r} not in {sorted(RANGE_TEST_VEHICLES)}")
+            continue
+        has_test = bool(row.get("range_tested_km")) or row.get("efficiency_basis") == "Independent test"
+        if vehicle == "Not tested" and has_test:
+            critical.append(f"{vk}: range_test_vehicle='Not tested' but a tested range/efficiency is present")
+        if vehicle == "Earlier version" and not row.get("range_test_note", "").strip():
+            critical.append(f"{vk}: range_test_vehicle='Earlier version' needs a range_test_note to display")
 
     # --- Warnings: pricing consistency ---
     for row in variant_rows:

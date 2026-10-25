@@ -95,6 +95,8 @@ class Variant(BaseModel):
     range_standard: Optional[str] = None
     range_maker_realworld_km: Optional[float] = None
     range_tested_km: Optional[int] = None
+    range_test_vehicle: Literal["Same model", "Earlier version", "Not tested"]
+    range_test_note: Optional[str] = None
     tested_vs_claim_pct: Optional[int] = None
     efficiency_km_per_kwh: Optional[float] = None
     efficiency_basis: str

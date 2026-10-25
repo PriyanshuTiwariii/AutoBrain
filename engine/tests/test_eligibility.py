@@ -25,6 +25,7 @@ def _make_variant(**overrides) -> Variant:
         range_standard="MIDC",
         range_maker_realworld_km=300.0,
         range_tested_km=280,
+        range_test_vehicle="Same model",
         tested_vs_claim_pct=70,
         efficiency_km_per_kwh=6.0,
         efficiency_basis="Independent test",

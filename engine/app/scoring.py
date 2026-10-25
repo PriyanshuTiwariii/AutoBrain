@@ -223,7 +223,9 @@ def compute_confidence(variant: Variant) -> Literal["High", "Medium", "Low"]:
         return "Low"
 
     has_good_price = variant.price_status == "verified"
-    has_good_range = (
+    # An earlier-version test still counts for ranking, but caps confidence at Medium:
+    # High needs the tested figures to come from the version sold now.
+    has_good_range = variant.range_test_vehicle == "Same model" and (
         variant.range_tested_km is not None
         or variant.efficiency_basis == "Independent test"
     )

@@ -20,7 +20,7 @@ GOLDEN_NEEDS = {
         budget_max_inr=2000000, seats_min=4, daily_km=40, home_charging="yes",
         nice_to_haves=["adaptive_suspension"],
     ),
-    "3_seven_seats_25L": dict(budget_max_inr=2500000, seats_min=7, daily_km=40, home_charging="yes"),
+    "3_seven_seats_25L": dict(budget_max_inr=2500000, seats_min=7, daily_km=40, longest_regular_trip_km=300, home_charging="yes"),
     "4_adas_crash_18L": dict(
         budget_max_inr=1800000, seats_min=5, daily_km=40, home_charging="yes",
         must_haves=["adas", "crash_tested"],

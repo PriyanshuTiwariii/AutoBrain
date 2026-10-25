@@ -34,7 +34,7 @@ autobrain/
     ├── scripts/
     │   └── enrich.py              # rebuilds the release from the master, with validation
     └── releases/
-        └── 2026-10-25/
+        └── 2026-10-25-r2/
             ├── autobrain_engine_variants.csv
             ├── autobrain_variant_ladder.csv
             ├── autobrain_accessories.csv
@@ -48,10 +48,10 @@ autobrain/
 
 | File | Data rows | What it is | Used by the demo? |
 | --- | --- | --- | --- |
-| `autobrain_engine_variants.csv` | 87 | One row per variant: price, range (claimed, maker real-world, independent test), costs, safety, features, watch-outs | Yes, core |
+| `autobrain_engine_variants.csv` | 87 | One row per variant: price, range (claimed, maker real-world, independent test, and whether that test was on the same model or an earlier version), costs, safety, features, watch-outs | Yes, core |
 | `autobrain_variant_ladder.csv` | 54 | Each price step within a model: extra cost, what you gain, factory-only gains | Yes ("Save money" / in-between) |
 | `autobrain_accessories.csv` | 794 | Genuine accessories; `usable_as_gap_filler = yes` marks the few that can stand in for a factory feature | Optional |
-| `autobrain_data_dictionary.csv` | 26 | Column meanings, types, allowed values, usage rules | Reference + enum validation |
+| `autobrain_data_dictionary.csv` | 28 | Column meanings, types, allowed values, usage rules | Reference + enum validation |
 | `manifest.json` | – | Release date, row counts, SHA-256 of each CSV | Engine logs it and checks the checksums at startup |
 
 Row counts exclude the header line (each CSV file has one more line than its data rows).

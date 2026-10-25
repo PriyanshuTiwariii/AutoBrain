@@ -56,6 +56,8 @@ def _parse_variant(row: dict[str, str]) -> Variant:
         range_standard=row.get("range_standard") or None,
         range_maker_realworld_km=_opt_float(row.get("range_maker_realworld_km", "")),
         range_tested_km=_opt_int(row.get("range_tested_km", "")),
+        range_test_vehicle=row["range_test_vehicle"],
+        range_test_note=row.get("range_test_note") or None,
         tested_vs_claim_pct=_opt_int(row.get("tested_vs_claim_pct", "")),
         efficiency_km_per_kwh=_opt_float(row.get("efficiency_km_per_kwh", "")),
         efficiency_basis=row.get("efficiency_basis", "None"),

@@ -101,7 +101,7 @@ def test_tradeoffs_do_not_repeat_watch_outs(dataset):
     """A trade-off already covered by a watch-out (e.g. ESP, NCAP, charger) is not repeated."""
     for needs in (
         Needs(budget_max_inr=1000000, seats_min=4, daily_km=30, home_charging="yes"),
-        Needs(budget_max_inr=2500000, seats_min=7, daily_km=40, home_charging="yes"),
+        Needs(budget_max_inr=2500000, seats_min=7, daily_km=40, longest_regular_trip_km=300, home_charging="yes"),
         Needs(budget_max_inr=1500000, seats_min=4, daily_km=40, home_charging="no"),
     ):
         result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
@@ -119,14 +119,16 @@ def test_tradeoffs_do_not_repeat_watch_outs(dataset):
 def test_why_not_is_near_misses_only(dataset):
     """Why-not: at most 3, one model each, exactly one failed need, never a seat-count miss,
     budget misses within 10%."""
-    needs = Needs(budget_max_inr=2500000, seats_min=7, daily_km=40, home_charging="yes")
+    needs = Needs(budget_max_inr=2500000, seats_min=7, daily_km=40, longest_regular_trip_km=300, home_charging="yes")
     result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
     not_rec = [s for s in result.slots if s.slot == "not_recommended"]
     assert len(not_rec) <= 3
     assert len({dataset.get_variant(s.variant_key).model for s in not_rec}) == len(not_rec)
     for s in not_rec:
-        assert len(s.reasons) == 1
-        assert "seats" not in s.reasons[0].detail
+        excluded = [r for r in s.reasons if r.code == "excluded"]
+        assert len(excluded) == 1
+        assert "seats" not in excluded[0].detail
+        assert all(r.code in ("excluded", "adds_beyond_eligible") for r in s.reasons)
         assert s.confidence == ""
         v = dataset.get_variant(s.variant_key)
         assert v.seats >= 7
@@ -171,7 +173,7 @@ def test_unsure_home_charging_includes_assumed_charger():
 
 
 def test_estimates_rounded_to_nearest_thousand(dataset):
-    needs = Needs(budget_max_inr=2500000, seats_min=7, daily_km=40, home_charging="yes")
+    needs = Needs(budget_max_inr=2500000, seats_min=7, daily_km=40, longest_regular_trip_km=300, home_charging="yes")
     result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
     for s in result.slots:
         for key in ("electricity_5yr_inr", "cost_to_own_5yr_inr"):
@@ -219,10 +221,17 @@ def test_alternative_names_safety_differences_both_ways():
     result = build_result(needs, [best, alt], "test", "0.1.0")
     alt_slot = [s for s in result.slots if s.slot == "strong_alternative"][0]
     assert any(r.code == "better_range" for r in alt_slot.reasons)
-    safety = [t.detail for t in alt_slot.tradeoffs if t.code == "safety_vs_top_pick"]
-    assert any("ESP standard" in d and "ESP not listed by maker" in d for d in safety)
-    assert any("Bharat NCAP rating applies" in d for d in safety)
-    assert any("6 airbags" in d for d in safety)
+    t = {x.code: x.detail for x in alt_slot.tradeoffs}
+    codes = [x.code for x in alt_slot.tradeoffs]
+    # Price difference first, then crash, then up to 4 lacking features with safety first
+    assert codes[0] == "price_vs_top_pick" and t["price_vs_top_pick"] == "₹1 lakh less than the top pick."
+    assert t["crash_vs_top_pick"] == "No Bharat NCAP crash test (top pick: 30/32 adult)."
+    assert codes[2:4] == ["lacks_esp", "lacks_airbags"]
+    assert t["lacks_airbags"] == "2 airbags vs 6 on the top pick."
+    assert "lacks_adas" in t
+    assert len([c for c in codes if c.startswith("lacks_")]) <= 4
+    # Generic ESP / crash trade-offs are not repeated
+    assert "esp_not_listed" not in codes and "no_crash_test" not in codes
 
 
 def test_alternative_without_advantage_not_shown():
@@ -257,3 +266,54 @@ def test_wall_charger_watch_out_hidden_only_without_home_charging(dataset):
     assert watch_outs_for("no") == [w for w in raw if not w.startswith("Wall charger not in price")]
     assert watch_outs_for("yes") == raw
     assert watch_outs_for("unsure") == raw
+
+
+def test_alternative_shows_both_crash_scores_exactly(dataset):
+    """Scenario 5: both rated, so both published scores appear, unrounded."""
+    needs = Needs(budget_max_inr=1500000, seats_min=4, daily_km=40, home_charging="no")
+    result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
+    alt = [s for s in result.slots if s.slot == "strong_alternative"][0]
+    t = {x.code: x.detail for x in alt.tradeoffs}
+    assert t["crash_scores"] == "Crash test: 29.86/32 adult vs 31.09/32 on the top pick."
+    assert alt.tradeoffs[0].code == "price_vs_top_pick"
+
+
+def test_ncap_scores_never_rounded(dataset):
+    import re
+    for needs in (
+        Needs(budget_max_inr=1000000, seats_min=4, daily_km=30, home_charging="yes"),
+        Needs(budget_max_inr=1500000, seats_min=4, daily_km=40, home_charging="no"),
+    ):
+        result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
+        text = " ".join(r.detail or "" for s in result.slots for r in s.reasons + s.tradeoffs)
+        assert "31.09/32" in text
+        assert not re.search(r"31/32", text)
+
+
+def test_esp_reason_names_the_cars(dataset):
+    """'not listed on some alternatives' is replaced by the names of the cars concerned."""
+    needs = Needs(budget_max_inr=1000000, seats_min=4, daily_km=30, home_charging="yes")
+    result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
+    esp = next(r.detail for r in result.slots[0].reasons if r.code == "esp_standard")
+    assert esp == "ESP standard; not listed by maker for the Tiago.ev Pure+ 24 and Tiago.ev Smart 19."
+    assert "some alternatives" not in esp
+
+
+def test_fit_label_only_on_competing_cards(dataset):
+    needs = Needs(budget_max_inr=1500000, seats_min=4, daily_km=40, home_charging="no")
+    result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
+    for s in result.slots:
+        if s.slot in ("best_match", "same_model", "strong_alternative"):
+            assert s.metrics["relative_label"]
+        else:
+            assert "relative_label" not in s.metrics
+
+
+def test_near_miss_names_features_eligible_options_lack(dataset):
+    """Scenario 1: Tiago.ev Creative+ 24 is just over budget and has a 360° camera that
+    none of the eligible options has."""
+    needs = Needs(budget_max_inr=1000000, seats_min=4, daily_km=30, home_charging="yes")
+    result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
+    nm = {s.variant_key: s for s in result.slots if s.slot == "not_recommended"}
+    extra = [r.detail for r in nm["TATA-TIAGOEV-CREATIVEPLUS24-24"].reasons if r.code == "adds_beyond_eligible"]
+    assert extra == ["Has what none of your eligible options is confirmed to have: 360° camera."]

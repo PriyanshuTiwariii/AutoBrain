@@ -4,7 +4,7 @@ from openpyxl.utils import get_column_letter as CL
 from openpyxl.comments import Comment
 
 # AutoBrain data pipeline. Usage (from repo root):
-#   python data/scripts/enrich.py data/master/AutoBrain_EV_Data.xlsx data/releases/<YYYY-MM-DD>
+#   python data/scripts/enrich.py data/master/AutoBrain_EV_Data.xlsx data/releases/<release-name>
 # Reads the master spreadsheet's source tabs (Variants, Features, Accessories), rebuilds the decision tabs
 # inside the spreadsheet, writes 4 validated CSVs + manifest.json to the release folder, and exits non-zero
 # if any validation check fails. Requires Python 3.10+ and openpyxl. Never edit the CSVs by hand.
@@ -81,6 +81,9 @@ for r in V:
         ns = [int(x) for x in re.findall(r"(\d+) km", ind)]
         tested = round(sum(ns) / len(ns)) if ns else None
     eff_t = num(g("efficiency_km_per_kwh_tested"))
+    rtv = g("range_test_vehicle") if (tested or eff_t) else None
+    range_test_vehicle = rtv if rtv in ("Same model", "Earlier version") else ("Not tested" if not (tested or eff_t) else "Same model")
+    range_test_note = (g("range_test_note") or "") if range_test_vehicle != "Not tested" else ""
     eff_est = round(rw_lo / kwh, 2) if (rw_lo and kwh) else None
     eff = eff_t or eff_est
     eff_basis = "Independent test" if eff_t else ("Maker real-world claim (estimate)" if eff_est else "None")
@@ -112,6 +115,7 @@ for r in V:
         sheet_id=vid, brand=brand, model=model, body_type=body, variant=vname, pricing_type=ptype,
         price_inr=price, price_status=status, battery_kwh=kwh, drive=drive, seats=seats, seat_options=seat_opt,
         range_claimed_km=rng, range_standard=rstd, range_maker_realworld_km=rw_lo, range_tested_km=tested,
+        range_test_vehicle=range_test_vehicle, range_test_note=range_test_note,
         tested_vs_claim_pct=round(tested / rng * 100) if (tested and rng) else None,
         efficiency_km_per_kwh=eff, efficiency_basis=eff_basis,
         boot_l=num(g("boot_space_l")) if not unknown(g("boot_space_l")) else None,
@@ -131,6 +135,7 @@ def watch(d):
     if d["ncap_status"] == "Not tested": w.append("No Bharat NCAP crash test")
     if d["ncap_status"] == "Rated, coverage unconfirmed": w.append("Crash rating may not cover this version")
     if d["battery_warranty"].startswith("8"): w.append("Battery warranty 8 yrs/1.6L km (not lifetime)")
+    if d["range_test_vehicle"] == "Earlier version": w.append("Range/efficiency test was on an earlier version of this car")
     if d["tested_vs_claim_pct"] and d["tested_vs_claim_pct"] < 70: w.append(f"Tested range only {d['tested_vs_claim_pct']}% of claim")
     if d["onboard_ac_kw"] and d["onboard_ac_kw"] < 7: w.append(f"Onboard charger {d['onboard_ac_kw']:g} kW: a 7.2 kW wall box won't charge faster")
     if d["charger_included"] in ("No", "Not stated", "Unclear") and d["pricing_type"] != "BaaS": w.append(f"Wall charger not in price (~₹{d['charger_cost_inr']:,})")
@@ -166,7 +171,7 @@ A.freeze_panes = "A2"
 if "Engine_Variants" in wb.sheetnames: del wb["Engine_Variants"]
 E = wb.create_sheet("Engine_Variants", 2)
 cols = ["variant_key", "sheet_id", "brand", "model", "body_type", "variant", "pricing_type", "price_inr", "price_status", "battery_kwh", "drive",
-        "seats", "seat_options", "range_claimed_km", "range_standard", "range_maker_realworld_km", "range_tested_km", "tested_vs_claim_pct",
+        "seats", "seat_options", "range_claimed_km", "range_standard", "range_maker_realworld_km", "range_tested_km", "range_test_vehicle", "range_test_note", "tested_vs_claim_pct",
         "efficiency_km_per_kwh", "efficiency_basis", "running_cost_inr_per_km", "energy_cost_period_inr", "charger_included", "charger_cost_inr",
         "charger_basis", "cost_to_own_period_inr", "boot_l", "ground_clearance_mm", "battery_clearance_mm", "airbags", "esp", "adas", "camera",
         "sunroof", "ventilated_front", "adaptive_suspension", "dc_max_kw", "dc_avg_kw_est", "minutes_dc_per_100km", "ac_full_hours_7kw", "onboard_ac_kw", "battery_warranty",
@@ -339,7 +344,7 @@ NUMERIC = ["price_inr","battery_kwh","seats","range_claimed_km","range_maker_rea
            "ncap_adult_32","ncap_child_49","terrain_modes","wading_mm"]
 ENUMS = {"pricing_type":{"battery included","BaaS"},"price_status":{"verified","corroborated","pending"},"drive":{"FWD","RWD","AWD","Not stated"},
          "esp":{"Yes","Not listed","Not stated"},"adas":{"None","L2","L2+","Not stated"},"camera":{"540°","360°","Rear camera","Sensors only","Not stated"},
-         "sunroof":{"Openable panoramic","Panoramic","Sunroof","None","Not stated"},"ventilated_front":{"Yes","No","Passive only","Not stated"},"adaptive_suspension":{"Yes","No","Not stated"},
+         "sunroof":{"Openable panoramic","Panoramic","Sunroof","None","Not stated"},"ventilated_front":{"Yes","No","Passive only","Not stated"},"adaptive_suspension":{"Yes","No","Not stated"},"range_test_vehicle":{"Same model","Earlier version","Not tested"},
          "battery_warranty":{"Lifetime (1st owner)","8 yrs / 1.6L km","Not stated"},
          "ncap_status":{"Rated, applies","Rated, coverage unconfirmed","Not tested","Not stated"},
          "charger_included":{"Yes (7.2 kW)","Yes (3.3 kW)","No","Unclear","Not stated"},
@@ -408,6 +413,8 @@ DD=[("autobrain_engine_variants.csv","variant_key","text","Permanent ID: BRAND-M
     ("autobrain_engine_variants.csv","range_claimed_km","integer","Maker certified range; see range_standard. Never use alone for usage fit."),
     ("autobrain_engine_variants.csv","range_maker_realworld_km","number","Lower bound of maker's own real-world claim (Tata C75 / Mahindra 'real-world'). Not independent."),
     ("autobrain_engine_variants.csv","range_tested_km","integer","Independent test (Autocar India). Preferred for usage fit when present."),
+    ("autobrain_engine_variants.csv","range_test_vehicle","enum","Whether range_tested_km / tested efficiency come from the exact version sold now ('Same model'), an earlier version ('Earlier version'), or no test ('Not tested'). Earlier-version tests must be labelled and must not earn High confidence."),
+    ("autobrain_engine_variants.csv","range_test_note","text","Plain-language note on the test vehicle; show it next to tested figures when range_test_vehicle = 'Earlier version'."),
     ("autobrain_engine_variants.csv","efficiency_km_per_kwh","number","Tested if efficiency_basis='Independent test', else estimate from maker claim."),
     ("autobrain_engine_variants.csv","running_cost_inr_per_km_default","number",f"At default blended tariff ₹{tariff:.1f}/kWh. Recompute with user's tariff: tariff / efficiency."),
     ("autobrain_engine_variants.csv","cost_to_own_5yr_default","integer","price + charger (if not included) + electricity at 40 km/day for 5 years. Excludes insurance, registration, service, resale, offers."),

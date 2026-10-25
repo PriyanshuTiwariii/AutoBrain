@@ -1,0 +1,29 @@
+file,column,type,meaning_and_rules
+autobrain_engine_variants.csv,variant_key,text,Permanent ID: BRAND-MODEL-TRIM-KWH[-AWD][-6S][-BAAS]. Join key for all files.
+autobrain_engine_variants.csv,sheet_id,text,Row ID in the master XLSX (can change; do not join on it).
+autobrain_engine_variants.csv,price_inr,integer,"Ex-showroom, without wall charger. BaaS rows = chassis price; battery is a separate loan."
+autobrain_engine_variants.csv,price_status,enum,verified = official; corroborated = 2+ independent sources; pending = unconfirmed (say so to user).
+autobrain_engine_variants.csv,range_claimed_km,integer,Maker certified range; see range_standard. Never use alone for usage fit.
+autobrain_engine_variants.csv,range_maker_realworld_km,number,Lower bound of maker's own real-world claim (Tata C75 / Mahindra 'real-world'). Not independent.
+autobrain_engine_variants.csv,range_tested_km,integer,Independent test (Autocar India). Preferred for usage fit when present.
+autobrain_engine_variants.csv,range_test_vehicle,enum,"Whether range_tested_km / tested efficiency come from the exact version sold now ('Same model'), an earlier version ('Earlier version'), or no test ('Not tested'). Earlier-version tests must be labelled and must not earn High confidence."
+autobrain_engine_variants.csv,range_test_note,text,Plain-language note on the test vehicle; show it next to tested figures when range_test_vehicle = 'Earlier version'.
+autobrain_engine_variants.csv,efficiency_km_per_kwh,number,"Tested if efficiency_basis='Independent test', else estimate from maker claim."
+autobrain_engine_variants.csv,running_cost_inr_per_km_default,number,At default blended tariff ₹9.4/kWh. Recompute with user's tariff: tariff / efficiency.
+autobrain_engine_variants.csv,cost_to_own_5yr_default,integer,"price + charger (if not included) + electricity at 40 km/day for 5 years. Excludes insurance, registration, service, resale, offers."
+autobrain_engine_variants.csv,dc_avg_kw_est,number,Average DC power derived from maker charge time and window. Comparable across brands.
+autobrain_engine_variants.csv,minutes_dc_per_100km_default,integer,Minutes of DC charging to add 100 km.
+autobrain_engine_variants.csv,charger_cost_inr,integer,Cost to add a 7.2 kW wall box if not included; see charger_basis for whether it's official or assumed.
+autobrain_engine_variants.csv,ncap_status,enum,"Bharat NCAP. 'Rated, coverage unconfirmed' = rating exists but may not cover this version."
+autobrain_engine_variants.csv,watch_outs,text,Auto-generated warnings; must be shown with any recommendation.
+autobrain_engine_variants.csv,adaptive_suspension,enum,Electronically adaptive dampers per maker. 'Not stated' is common: never infer ride quality from it.
+autobrain_engine_variants.csv,ground_clearance_mm,integer,"Unladen, as stated by maker. Blank = not stated."
+autobrain_engine_variants.csv,battery_clearance_mm,integer,Clearance under the battery pack where the maker states it. Blank = not stated.
+autobrain_engine_variants.csv,(all enums),enum,"Allowed values: pricing_type: BaaS/battery included; price_status: corroborated/pending/verified; drive: AWD/FWD/Not stated/RWD; esp: Not listed/Not stated/Yes; adas: L2/L2+/None/Not stated; camera: 360°/540°/Not stated/Rear camera/Sensors only; sunroof: None/Not stated/Openable panoramic/Panoramic/Sunroof; ventilated_front: No/Not stated/Passive only/Yes; adaptive_suspension: No/Not stated/Yes; range_test_vehicle: Earlier version/Not tested/Same model; battery_warranty: 8 yrs / 1.6L km/Lifetime (1st owner)/Not stated; ncap_status: Not stated/Not tested/Rated, applies/Rated, coverage unconfirmed; charger_included: No/Not stated/Unclear/Yes (3.3 kW)/Yes (7.2 kW); body_type: Hatchback/SUV/SUV coupé/Sedan; efficiency_basis: Independent test/Maker real-world claim (estimate)/None"
+autobrain_engine_variants.csv,(blank cells),-,Blank = not stated by any source. Treat as unknown: never pass or fail a filter on it silently.
+autobrain_variant_ladder.csv,ladder_key,text,"from_variant_key__TO__to_variant_key. Battery-included variants only, sorted by price within model."
+autobrain_variant_ladder.csv,factory_only_gains,text (pipe-separated),Gains no accessory can replace. Use for 'what you give up' wording.
+autobrain_accessories.csv,accessory_key,text,BRAND-MODEL-NAME. Genuine accessories only; aftermarket excluded by policy.
+autobrain_accessories.csv,usable_as_gap_filler,yes/no,"Only 'yes' items may be suggested to cover a missing factory feature, and never as equal to the higher variant."
+autobrain_accessories.csv,equivalence_basis,text,"Equivalence ratings are analyst judgement, not maker data."
+autobrain_accessories.csv,price_inr,integer,Blank = maker does not publish (most Mahindra). Tata prices from Tata.ev shop.

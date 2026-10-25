@@ -4,19 +4,19 @@ from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.config import REPO_ROOT
+from app.config import DATA_RELEASE_DIR
 from app.dataset import load_dataset
 from app.models import Needs
 from app.slots import build_result, fmt_lakh
 
-ds = load_dataset(REPO_ROOT / "data" / "releases" / "2026-10-25")
+ds = load_dataset(DATA_RELEASE_DIR)
 
 SCENARIOS = {
     "Scenario 1: Budget ₹10 lakh, seats≥4, 30 km/day, home charging": Needs(
         budget_max_inr=1000000, seats_min=4, daily_km=30, home_charging="yes",
     ),
-    "Scenario 3: Budget ₹25 lakh, seats≥7, long trips": Needs(
-        budget_max_inr=2500000, seats_min=7, daily_km=40, home_charging="yes",
+    "Scenario 3: Budget ₹25 lakh, seats≥7, long trips (300 km)": Needs(
+        budget_max_inr=2500000, seats_min=7, daily_km=40, longest_regular_trip_km=300, home_charging="yes",
     ),
     "Scenario 5: Budget ₹15 lakh, seats≥4, 40 km/day, no home charging": Needs(
         budget_max_inr=1500000, seats_min=4, daily_km=40, home_charging="no",
@@ -54,8 +54,9 @@ def print_result(title, needs):
 
         # Confidence only for recommended slots
         if slot.slot != "not_recommended":
-            fit_label = slot.metrics.get('relative_label', '—')
-            print(f"  │ Fit: {fit_label}   Evidence: {slot.confidence}")
+            fit_label = slot.metrics.get('relative_label')
+            fit = f"Fit: {fit_label}   " if fit_label else ""
+            print(f"  │ {fit}Evidence: {slot.confidence}")
         print(f"  │")
 
         print(f"  │ Price: {fmt_lakh(slot.price_inr)} ({slot.price_status})")
@@ -76,19 +77,13 @@ def print_result(title, needs):
             print(f"  │ Saves: {fmt_lakh(slot.savings_vs_best_inr)} vs top pick")
         print(f"  │")
 
-        # Range
-        rt = m.get("range_tested_km")
-        rr = m.get("range_maker_realworld_km")
-        rc_ = m.get("range_claimed_km")
-        range_str = ""
-        if rt:
-            range_str = f"{rt} km (independent test)"
-        elif rr:
-            range_str = f"{int(rr)}+ km (maker real-world)"
-        elif rc_:
-            range_str = f"{rc_} km (claimed only)"
-        if range_str:
-            print(f"  │ Range: {range_str}")
+        # Range (labelled by the engine, including tests done on an earlier version)
+        if m.get("range_display"):
+            print(f"  │ Range: {m['range_display']}")
+        if m.get("efficiency_display"):
+            print(f"  │ Efficiency: {m['efficiency_display']}")
+        if m.get("range_test_note"):
+            print(f"  │ Test note: {m['range_test_note']}")
         dc = m.get("dc_avg_kw_est")
         mins = m.get("minutes_dc_per_100km")
         if dc:

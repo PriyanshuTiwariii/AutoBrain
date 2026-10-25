@@ -14,6 +14,11 @@ def fmt_lakh(v: int | None) -> str:
     return f"₹{lakh:.2f} lakh"
 
 
+def fmt_ncap(score: float | None, out_of: int = 32) -> str:
+    """NCAP score exactly as published: 31.09/32, 32/32 (never rounded)."""
+    return f"{score:g}/{out_of}" if score is not None else "not stated"
+
+
 # ---------------------------------------------------------------------------
 # Reason codes (why a slot was picked)
 # ---------------------------------------------------------------------------

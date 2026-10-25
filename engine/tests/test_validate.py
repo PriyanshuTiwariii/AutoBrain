@@ -12,7 +12,7 @@ from app.validate import validate_release
 
 
 def test_real_release_passes(release_dir: Path):
-    """The 2026-10-25 release must have zero critical errors."""
+    """The default data release must have zero critical errors."""
     report = validate_release(release_dir)
     assert report.checksums_ok is True
     assert report.critical_errors == [], report.critical_errors

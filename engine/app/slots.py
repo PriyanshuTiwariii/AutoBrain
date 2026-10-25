@@ -8,9 +8,13 @@ from .eligibility import (
     _FEATURE_LABELS, FEATURE_CHECKERS, Check, EligibilityResult, check_all,
 )
 from .costs import budget_cost
-from .explain import fmt_lakh, render_tradeoff
-from .models import Needs, Result, ReasonCode, Slot, Variant
+from .explain import fmt_lakh, fmt_ncap, render_tradeoff
+from .models import FeatureEnum, Needs, Result, ReasonCode, Slot, Variant
 from .scoring import SLOW_DC_THRESHOLD_KW, RankedVariant, _assign_label, rank_variants
+from .wording import (
+    FEATURE_GROUPS, factory_only_nouns, join_list, ladder_gains, lower_first, parse_ladder,
+    relevance_key,
+)
 
 if TYPE_CHECKING:
     from .dataset import Dataset
@@ -31,20 +35,83 @@ def _is_slow_dc(v: Variant) -> bool:
     return (v.dc_avg_kw_est or 0) < SLOW_DC_THRESHOLD_KW
 
 
+def _car_name(v: Variant) -> str:
+    return f"{v.model} {v.variant}"
+
+
+def _relies_on_dc(needs: Needs) -> bool:
+    return needs.home_charging != "yes" or bool(needs.longest_regular_trip_km)
+
+
 def _effective_range(v: Variant) -> int | None:
     return v.range_tested_km or (
         int(v.range_maker_realworld_km) if v.range_maker_realworld_km else None
     )
 
 
+EARLIER_VERSION_LABEL = "tested on an earlier version"
+
+
+def _is_earlier_version_test(v: Variant) -> bool:
+    return v.range_test_vehicle == "Earlier version"
+
+
 def _range_label(v: Variant) -> str:
     if v.range_tested_km:
-        return f"{v.range_tested_km} km (tested)"
+        basis = EARLIER_VERSION_LABEL if _is_earlier_version_test(v) else "tested"
+        return f"{v.range_tested_km} km ({basis})"
     if v.range_maker_realworld_km:
         return f"{int(v.range_maker_realworld_km)} km (maker real-world)"
     if v.range_claimed_km:
         return f"{v.range_claimed_km} km (claimed)"
     return "not stated"
+
+
+def _range_display(v: Variant) -> str:
+    """Range for a card: the figure, its basis, and the earlier-version label when it applies."""
+    if v.range_tested_km:
+        basis = EARLIER_VERSION_LABEL if _is_earlier_version_test(v) else "independent test"
+        return f"{v.range_tested_km} km ({basis})"
+    if v.range_maker_realworld_km:
+        return f"{int(v.range_maker_realworld_km)}+ km (maker real-world)"
+    if v.range_claimed_km:
+        return f"{v.range_claimed_km} km (claimed only)"
+    return "not stated"
+
+
+def _efficiency_basis_label(v: Variant) -> str:
+    """Short basis for an efficiency figure, worded like the range: independent test,
+    tested on an earlier version, or maker estimate."""
+    if v.efficiency_basis == "Independent test":
+        return EARLIER_VERSION_LABEL if _is_earlier_version_test(v) else "independent test"
+    if v.efficiency_basis == "Maker real-world claim (estimate)":
+        return "maker estimate"
+    return v.efficiency_basis.lower()
+
+
+def _efficiency_display(v: Variant) -> str | None:
+    if not v.efficiency_km_per_kwh:
+        return None
+    return f"{v.efficiency_km_per_kwh:g} km/kWh ({_efficiency_basis_label(v)})"
+
+
+def _range_plain(v: Variant) -> str:
+    """Range with its basis, without brackets, for use inside a bracketed comparison."""
+    return _range_label(v).replace(" (", " ").rstrip(")")
+
+
+def _range_vs_need(v: Variant, needs: Needs) -> str | None:
+    """'covers your 300 km trip with 178 km spare' / 'falls 20 km short of your 300 km trip'."""
+    eff = _effective_range(v)
+    if not eff:
+        return None
+    if needs.longest_regular_trip_km:
+        need, what = needs.longest_regular_trip_km, f"{needs.longest_regular_trip_km} km trip"
+    else:
+        need, what = needs.daily_km, f"{needs.daily_km} km/day"
+    if eff >= need:
+        return f"covers your {what} with {eff - need} km spare"
+    return f"falls {need - eff} km short of your {what}"
 
 
 WALL_CHARGER_WATCH_OUT = "wall charger not in price"
@@ -70,6 +137,12 @@ def _build_metrics(rv: RankedVariant) -> dict[str, Any]:
         "range_claimed_km": v.range_claimed_km,
         "efficiency_km_per_kwh": v.efficiency_km_per_kwh,
         "efficiency_basis": v.efficiency_basis,
+        "efficiency_basis_label": _efficiency_basis_label(v),
+        "efficiency_display": _efficiency_display(v),
+        "range_display": _range_display(v),
+        "range_test_vehicle": v.range_test_vehicle,
+        # Shown next to tested figures; only an earlier-version test needs the explanation
+        "range_test_note": v.range_test_note if _is_earlier_version_test(v) else None,
         "battery_kwh": v.battery_kwh,
         "running_cost_inr_per_km": c.running_cost_inr_per_km,
         "tariff_basis": c.tariff_basis,
@@ -110,26 +183,24 @@ def _specific_reasons(rv: RankedVariant, needs: Needs, ranked: list[RankedVarian
     if v.ncap_status == "Rated, applies" and v.ncap_adult_32:
         best_ncap = max((r.variant.ncap_adult_32 or 0) for r in ranked)
         if v.ncap_adult_32 >= best_ncap:
-            reasons.append({"code": "best_crash_score", "detail": f"Highest crash-test score ({v.ncap_adult_32:.0f}/32 adult)."}) 
+            reasons.append({"code": "best_crash_score", "detail": f"Highest crash-test score ({fmt_ncap(v.ncap_adult_32)} adult)."})
 
-    # ESP standard?
+    # ESP standard? (the cars without it are named once the cards are known; see _name_esp_gaps)
     if v.esp == "Yes":
         no_esp = sum(1 for r in ranked if r.variant.esp != "Yes")
         if no_esp > 0:
-            reasons.append({"code": "esp_standard", "detail": "ESP standard (not listed on some alternatives)."})
+            reasons.append({"code": "esp_standard", "detail": "ESP standard."})
 
     # Best DC charging? (especially relevant for no-home-charging)
     if v.dc_avg_kw_est and v.dc_avg_kw_est >= SLOW_DC_THRESHOLD_KW:
         best_dc = max((r.variant.dc_avg_kw_est or 0) for r in ranked)
         if v.dc_avg_kw_est >= best_dc:
-            reasons.append({"code": "best_dc", "detail": f"Fastest DC charging ({v.dc_avg_kw_est:.0f} kW avg)."}) 
+            reasons.append({"code": "best_dc", "detail": f"Fastest DC charging ({v.dc_avg_kw_est:.0f} kW avg)."})
 
-    # Range covers daily need?
-    eff_range = _effective_range(v)
-    if eff_range:
-        spare = eff_range - needs.daily_km
-        if spare > 0:
-            reasons.append({"code": "range_covers_daily", "detail": f"Range of {_range_label(v)} covers your {needs.daily_km} km/day with {spare} km spare."})
+    # Range covers the longest regular trip (or the daily need when no trip is given)?
+    coverage = _range_vs_need(v, needs)
+    if coverage and coverage.startswith("covers"):
+        reasons.append({"code": "range_covers_need", "detail": f"Range of {_range_label(v)} {coverage}."})
 
     # Battery warranty lifetime?
     if v.battery_warranty == "Lifetime (1st owner)":
@@ -166,7 +237,7 @@ def _safety_differences(a: Variant, b: Variant, a_name: str, b_name: str) -> lis
             "detail": f"{a_name}: {_esp_phrase(a.esp)}; {b_name}: {_esp_phrase(b.esp)}.",
         })
     if a.ncap_status == "Rated, applies" and b.ncap_status != "Rated, applies":
-        score = f" ({a.ncap_adult_32:.0f}/32 adult)" if a.ncap_adult_32 else ""
+        score = f" ({fmt_ncap(a.ncap_adult_32)} adult)" if a.ncap_adult_32 else ""
         diffs.append({
             "code": "crash_rating_difference",
             "detail": f"{a_name}: Bharat NCAP rating applies{score}; {b_name}: "
@@ -180,12 +251,135 @@ def _safety_differences(a: Variant, b: Variant, a_name: str, b_name: str) -> lis
     return diffs
 
 
+def _both_rated(a: Variant, b: Variant) -> bool:
+    return (
+        a.ncap_status == "Rated, applies" and b.ncap_status == "Rated, applies"
+        and a.ncap_adult_32 is not None and b.ncap_adult_32 is not None
+    )
+
+
+def _crash_shortfall(best: Variant, other: Variant) -> str | None:
+    """How `other`'s crash evidence falls short of the top pick's, or None."""
+    if best.ncap_status != "Rated, applies" or best.ncap_adult_32 is None:
+        return None
+    top = f"top pick: {fmt_ncap(best.ncap_adult_32)} adult"
+    if _both_rated(best, other):
+        if other.ncap_adult_32 < best.ncap_adult_32:
+            return f"lower crash score ({fmt_ncap(other.ncap_adult_32)} adult vs {fmt_ncap(best.ncap_adult_32)} on the top pick)"
+        return None
+    if other.ncap_status == "Not tested":
+        return f"no Bharat NCAP crash test ({top})"
+    if other.ncap_status == "Rated, coverage unconfirmed":
+        return f"crash rating may not cover this version ({top})"
+    return f"no stated crash rating ({top})"
+
+
+# Feature checks scanned for "what the top pick has that this car lacks"
+# (ESP and crash rating are handled first, as safety; seats are a hard requirement)
+_COMPARED_FEATURES = [
+    f for f in FEATURE_CHECKERS
+    if f not in (FeatureEnum.esp, FeatureEnum.crash_tested, FeatureEnum.seven_seats)
+]
+
+
+def _feature_name(feature: FeatureEnum) -> str:
+    return lower_first(_FEATURE_LABELS.get(feature, feature.value))
+
+
+def _lacks_vs_top_pick(best: Variant, other: Variant, needs: Needs) -> list[dict[str, str]]:
+    """What the top pick has that `other` lacks, most relevant to this buyer first.
+    Safety (ESP, crash rating, airbags) always comes first. Unknown is worded as unknown."""
+    items: list[tuple[tuple, str, str]] = []
+    if best.esp == "Yes" and other.esp != "Yes":
+        items.append(((-1, 0), "esp", "ESP not listed by maker (top pick has ESP)"))
+    crash = _crash_shortfall(best, other)
+    if crash:
+        items.append(((-1, 1), "crash", crash))
+    if best.airbags and other.airbags and best.airbags > other.airbags:
+        items.append(((-1, 2), "airbags", f"{other.airbags} airbags vs {best.airbags} on the top pick"))
+
+    if _relies_on_dc(needs) and not _is_slow_dc(best) and _is_slow_dc(other) and other.dc_avg_kw_est:
+        items.append((
+            relevance_key("charging", None, needs), "slow_dc",
+            f"slow DC charging ({other.dc_avg_kw_est:g} kW vs {best.dc_avg_kw_est:g} kW on the top pick)",
+        ))
+    best_range, other_range = _effective_range(best), _effective_range(other)
+    if best_range and other_range and other_range < best_range:
+        items.append((
+            relevance_key("range", None, needs), "less_range",
+            f"less range ({_range_plain(other)} vs {_range_plain(best)} on the top pick)",
+        ))
+
+    for i, feature in enumerate(_COMPARED_FEATURES):
+        if feature == FeatureEnum.charger_included and needs.home_charging == "no":
+            continue
+        checker = FEATURE_CHECKERS[feature]
+        if checker(best) != Check.PASS:
+            continue
+        state = checker(other)
+        if state == Check.PASS:
+            continue
+        name = _feature_name(feature)
+        short = f"no {name} (top pick has it)" if state == Check.FAIL else f"{name} not stated by maker (top pick has it)"
+        items.append((relevance_key(FEATURE_GROUPS[feature], feature, needs, i), feature.value, short))
+
+    items.sort(key=lambda x: x[0])
+    return [{"code": code, "short": short} for _, code, short in items]
+
+
+# Generic trade-off codes already covered by a comparison item
+_COVERED_BY = {
+    "esp": {"esp_not_listed"},
+    "crash": {"no_crash_test", "crash_unconfirmed"},
+    "slow_dc": {"slow_dc"},
+}
+
+
+def _price_vs_top_pick(other: Variant, best: Variant) -> dict[str, str]:
+    diff = (other.price_inr or 0) - (best.price_inr or 0)
+    if diff > 0:
+        text = f"{fmt_lakh(diff)} more than the top pick."
+    elif diff < 0:
+        text = f"{fmt_lakh(-diff)} less than the top pick."
+    else:
+        text = "Same price as the top pick."
+    return {"code": "price_vs_top_pick", "detail": text}
+
+
+def _alternative_tradeoffs(alt: Variant, best: Variant, needs: Needs) -> tuple[list[dict[str, str]], set[str]]:
+    """Trade-offs against the top pick: price difference, crash scores, and up to 4 of the
+    top pick's features this car lacks. Returns (trade-offs, generic codes they cover)."""
+    tradeoffs = [_price_vs_top_pick(alt, best)]
+    lacks = _lacks_vs_top_pick(best, alt, needs)
+    if _both_rated(alt, best):
+        tradeoffs.append({
+            "code": "crash_scores",
+            "detail": f"Crash test: {fmt_ncap(alt.ncap_adult_32)} adult vs {fmt_ncap(best.ncap_adult_32)} on the top pick.",
+        })
+    else:
+        crash = next((l for l in lacks if l["code"] == "crash"), None)
+        if crash:
+            tradeoffs.append({"code": "crash_vs_top_pick", "detail": crash["short"][0].upper() + crash["short"][1:] + "."})
+    features = [l for l in lacks if l["code"] != "crash"][:4]
+    for l in features:
+        tradeoffs.append({"code": f"lacks_{l['code']}", "detail": l["short"][0].upper() + l["short"][1:] + "."})
+    covered: set[str] = set()
+    for l in lacks:
+        covered |= _COVERED_BY.get(l["code"], set())
+    return tradeoffs, covered
+
+
 def _alternative_comparison(
     alt: RankedVariant, best: RankedVariant,
-) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
-    """(the alternative's concrete advantages, safety items where it falls short of the best)."""
+) -> list[dict[str, str]]:
+    """The alternative's concrete advantages over the top pick."""
     av, bv = alt.variant, best.variant
     advantages = _safety_differences(av, bv, "This car", "top pick")
+    if _both_rated(av, bv) and av.ncap_adult_32 > bv.ncap_adult_32:
+        advantages.append({
+            "code": "higher_crash_score",
+            "detail": f"Higher crash score: {fmt_ncap(av.ncap_adult_32)} adult vs {fmt_ncap(bv.ncap_adult_32)} on the top pick.",
+        })
 
     if av.adas in ("L2", "L2+") and bv.adas not in ("L2", "L2+"):
         top = "none" if bv.adas == "None" else "not stated"
@@ -207,11 +401,7 @@ def _alternative_comparison(
     if a5 and b5 and b5 - a5 >= MIN_5YR_COST_DIFF_INR:
         advantages.append({"code": "lower_5yr", "detail": f"~{fmt_lakh(b5 - a5)} lower estimated 5-year cost."})
 
-    shortfalls = [
-        {"code": "safety_vs_top_pick", "detail": d["detail"]}
-        for d in _safety_differences(bv, av, "Top pick", "this car")
-    ]
-    return advantages, shortfalls
+    return advantages
 
 
 # ---------------------------------------------------------------------------
@@ -282,10 +472,15 @@ def _build_slot(
     needs: Needs,
     savings_vs_best: int | None = None,
     extra_tradeoffs: list[dict[str, str]] | None = None,
+    covered_codes: set[str] | None = None,
 ) -> Slot:
     v = rv.variant
     watch_outs = _watch_outs_list(v, needs)
-    tradeoffs = (extra_tradeoffs or []) + _buyer_relevant_tradeoffs(v, needs, watch_outs)
+    generic = [
+        t for t in _buyer_relevant_tradeoffs(v, needs, watch_outs)
+        if t["code"] not in (covered_codes or set())
+    ]
+    tradeoffs = (extra_tradeoffs or []) + generic
     return Slot(
         slot=slot_type,
         variant_key=v.variant_key,
@@ -305,6 +500,30 @@ def _build_slot(
 # Why-not: near misses only (within 10% over budget OR exactly 1 fail), max 3
 # ---------------------------------------------------------------------------
 
+_BEYOND_ELIGIBLE_NAMES = {
+    FeatureEnum.esp: "ESP",
+    FeatureEnum.crash_tested: "a Bharat NCAP rating that covers this version",
+}
+
+
+def _beyond_eligible(v: Variant, eligible: list[Variant], needs: Needs) -> list[str]:
+    """Features this car has that none of the eligible options is confirmed to have."""
+    extras: list[tuple[tuple, str]] = []
+    for i, (feature, checker) in enumerate(FEATURE_CHECKERS.items()):
+        if feature == FeatureEnum.seven_seats:
+            continue
+        if feature == FeatureEnum.charger_included and needs.home_charging == "no":
+            continue
+        if checker(v) == Check.PASS and not any(checker(e) == Check.PASS for e in eligible):
+            name = _BEYOND_ELIGIBLE_NAMES.get(feature, _feature_name(feature))
+            extras.append((relevance_key(FEATURE_GROUPS[feature], feature, needs, i), name))
+    most_airbags = max((e.airbags or 0 for e in eligible), default=0)
+    if v.airbags and most_airbags and v.airbags > most_airbags:
+        extras.append(((-1, 0), f"{v.airbags} airbags (eligible options have up to {most_airbags})"))
+    extras.sort(key=lambda x: x[0])
+    return [name for _, name in extras]
+
+
 def _pick_why_not(
     all_eligibility: list[EligibilityResult],
     all_variants: list[Variant],
@@ -312,6 +531,7 @@ def _pick_why_not(
     needs: Needs,
     max_items: int = 3,
 ) -> list[Slot]:
+    eligible_variants = [v for v in all_variants if v.variant_key in eligible_keys]
     excluded = [
         er for er in all_eligibility
         if er.status == "excluded" and er.variant_key not in eligible_keys
@@ -369,6 +589,12 @@ def _pick_why_not(
     slots: list[Slot] = []
     for _, er, v in picked:
         reasons = [{"code": "excluded", "detail": r} for r in er.fail_reasons]
+        extras = _beyond_eligible(v, eligible_variants, needs)
+        if extras:
+            reasons.append({
+                "code": "adds_beyond_eligible",
+                "detail": f"Has what none of your eligible options is confirmed to have: {join_list(extras)}.",
+            })
         slots.append(Slot(
             slot="not_recommended",
             variant_key=v.variant_key,
@@ -405,85 +631,43 @@ def _find_step_up(best_key: str, eligible_keys: set[str], dataset: "Dataset"):
     return None, None
 
 
-# Ladder field names → buyer wording (ladder "Range km" is the maker's claimed range)
-_LADDER_NUMERIC_FIELDS = {
-    "Battery kWh": ("battery", "kWh"),
-    "Range km": ("claimed range", "km"),
-}
-_LADDER_NO_VALUE = ("not stated", "not listed", "none", "no", "—", "-", "")
+MAX_TOP_PICK_ADDS = 5
 
 
-def _ladder_field_name(field: str) -> str:
-    return _LADDER_NUMERIC_FIELDS.get(field, (field, ""))[0]
+def _factory_only_text(factory_only_gains: str | None, needs: Needs) -> str:
+    return join_list(factory_only_nouns(factory_only_gains, needs))
 
 
-def _is_number(s: str) -> bool:
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-
-def _gain_phrases(what_you_gain: str) -> list[str]:
-    """'Sunroof: None → Sunroof; Battery kWh: 59 → 79' → ['Sunroof', 'battery 59 → 79 kWh']."""
-    phrases: list[str] = []
-    for item in what_you_gain.split(";"):
-        item = item.strip()
-        if ":" not in item or "→" not in item:
-            if item:
-                phrases.append(item)
-            continue
-        field, change = (p.strip() for p in item.split(":", 1))
-        before, after = (p.strip() for p in change.split("→", 1))
-        if after.lower() in _LADDER_NO_VALUE or after.lower().startswith("not stated"):
-            continue  # not a gain the buyer can count on
-        if _is_number(before) and _is_number(after):
-            name, unit = _LADDER_NUMERIC_FIELDS.get(field, (field, ""))
-            phrases.append(f"{name} {before} → {after}{' ' + unit if unit else ''}")
-        elif after.lower() == field.lower():
-            phrases.append(field)
-        elif after.lower().startswith("yes"):
-            detail = after[3:].strip(" ()")
-            phrases.append(f"{field} ({detail})" if detail else field)
-        else:
-            phrases.append(f"{field}: {after}")
-    return phrases
-
-
-def _factory_only_text(factory_only_gains: str | None) -> str:
-    if not factory_only_gains:
-        return ""
-    return ", ".join(_ladder_field_name(f.strip()) for f in factory_only_gains.split("|") if f.strip())
-
-
-def _collect_ladder_gains(from_key: str, to_key: str, dataset: "Dataset") -> str | None:
-    """Net gains across several ladder steps: one entry per field, first 'from' → last 'to'."""
+def _collect_ladder_gains(
+    from_key: str, to_key: str, dataset: "Dataset", needs: Needs, limit: int | None = None,
+) -> list[str]:
+    """Net gains across several ladder steps, in plain words and most relevant first:
+    one entry per field, from its first 'before' to its last 'after'."""
     changes: dict[str, list[str]] = {}  # field -> [before, after]
-    loose: list[str] = []
     current = from_key
     visited: set[str] = set()
     while current != to_key and current not in visited:
         visited.add(current)
-        found = False
-        for step in dataset.ladder:
-            if step.from_variant_key == current:
-                for item in step.what_you_gain.split(";"):
-                    item = item.strip()
-                    if ":" in item and "→" in item:
-                        field, change = (p.strip() for p in item.split(":", 1))
-                        before, after = (p.strip() for p in change.split("→", 1))
-                        changes.setdefault(field, [before, after])[1] = after
-                    elif item:
-                        loose.append(item)
-                current = step.to_variant_key
-                found = True
-                break
-        if not found:
+        step = next((s for s in dataset.ladder if s.from_variant_key == current), None)
+        if step is None:
             break
-    merged = "; ".join(f"{f}: {b} → {a}" for f, (b, a) in changes.items())
-    gains = _gain_phrases(merged) + loose
-    return ", ".join(gains) if gains else None
+        for field, before, after in parse_ladder(step.what_you_gain):
+            changes.setdefault(field, [before, after])[1] = after
+        current = step.to_variant_key
+    return ladder_gains([(f, b, a) for f, (b, a) in changes.items()], needs, limit=limit)
+
+
+def _name_esp_gaps(best_slot: Slot, shown: list[Variant], eligible: list[Variant]) -> None:
+    """Replace 'ESP standard.' with the names of the cars concerned: those shown on other
+    cards first, otherwise the eligible options without ESP."""
+    for reason in best_slot.reasons:
+        if reason.code != "esp_standard":
+            continue
+        lacking = [v for v in shown if v.esp != "Yes"] or [v for v in eligible if v.esp != "Yes"]
+        names = [_car_name(v) for v in lacking]
+        if len(names) > 3:
+            names = names[:3] + [f"{len(lacking) - 3} more eligible options"]
+        reason.detail = f"ESP standard; not listed by maker for the {join_list(names)}."
 
 
 # ---------------------------------------------------------------------------
@@ -517,19 +701,19 @@ def assign_slots(
         sm_rv = ranked_map.get(step_up_key) if step_up_key else None
         if sm_rv is not None and step_up_key not in used_keys:
             used_keys.add(step_up_key)
-            gains = ", ".join(_gain_phrases(step_up.what_you_gain)) or step_up.what_you_gain
+            gains = join_list(ladder_gains(parse_ladder(step_up.what_you_gain), needs)) or step_up.what_you_gain
             reasons = [{
                 "code": "same_model_step_up",
-                "detail": f"For {fmt_lakh(step_up.extra_cost_inr or 0)} more you get: {gains}.",
+                "detail": f"For {fmt_lakh(step_up.extra_cost_inr or 0)} more you get {gains}.",
             }]
             sm_range = _effective_range(sm_rv.variant)
             best_range = _effective_range(best.variant)
             if sm_range and best_range and sm_range > best_range:
                 reasons.append({
                     "code": "range_advantage",
-                    "detail": f"Real-world range {_range_label(sm_rv.variant)} vs {_range_label(best.variant)} on the top pick.",
+                    "detail": f"Range {_range_label(sm_rv.variant)} vs {_range_label(best.variant)} on the top pick.",
                 })
-            factory = _factory_only_text(step_up.factory_only_gains)
+            factory = _factory_only_text(step_up.factory_only_gains, needs)
             if factory:
                 reasons.append({"code": "factory_only", "detail": f"Factory-only (can\u2019t add later): {factory}."})
             slots.append(_build_slot("same_model", sm_rv, reasons, needs))
@@ -538,12 +722,14 @@ def assign_slots(
     for rv in ranked[1:]:
         if rv.variant.model == best.variant.model or rv.variant.variant_key in used_keys:
             continue
-        advantages, shortfalls = _alternative_comparison(rv, best)
+        advantages = _alternative_comparison(rv, best)
         if not advantages:
             continue  # no meaningful advantage: don't show it as an alternative
         used_keys.add(rv.variant.variant_key)
+        alt_tradeoffs, covered = _alternative_tradeoffs(rv.variant, best.variant, needs)
         slots.append(_build_slot(
-            "strong_alternative", rv, advantages, needs, extra_tradeoffs=shortfalls,
+            "strong_alternative", rv, advantages, needs,
+            extra_tradeoffs=alt_tradeoffs, covered_codes=covered,
         ))
         break
 
@@ -554,13 +740,22 @@ def assign_slots(
             step_down_rv = ranked_map.get(step_down_key)
             if step_down_rv is not None:
                 used_keys.add(step_down_key)
-                factory_only = _factory_only_text(ladder_step.factory_only_gains)
+                factory_only = _factory_only_text(ladder_step.factory_only_gains, needs)
                 extra = ladder_step.extra_cost_inr or 0
-                given_up = ", ".join(_gain_phrases(ladder_step.what_you_gain)) or ladder_step.what_you_gain
+                given_up = join_list(ladder_gains(parse_ladder(ladder_step.what_you_gain), needs)) or ladder_step.what_you_gain
                 reasons = [{
                     "code": "in_between",
                     "detail": f"You give up {given_up} for {fmt_lakh(extra)} less.",
                 }]
+                sd_range = _effective_range(step_down_rv.variant)
+                best_range = _effective_range(best.variant)
+                if sd_range and best_range and sd_range < best_range:
+                    coverage = _range_vs_need(step_down_rv.variant, needs)
+                    reasons.append({
+                        "code": "range_tradeoff",
+                        "detail": f"Range {_range_label(step_down_rv.variant)} vs "
+                                  f"{_range_label(best.variant)} on the top pick; {coverage}.",
+                    })
                 if factory_only:
                     reasons.append({"code": "factory_only", "detail": f"Factory-only (can\u2019t add later): {factory_only}."})
                 savings = (best.variant.price_inr or 0) - (step_down_rv.variant.price_inr or 0)
@@ -583,23 +778,52 @@ def assign_slots(
     ):
         used_keys.add(cheapest.variant.variant_key)
         savings = best.variant.price_inr - cheapest.variant.price_inr
-        reasons_list: list[dict[str, str]] = [
-            {"code": "cheapest_eligible", "detail": f"Cheapest option meeting your needs ({fmt_lakh(cheapest.variant.price_inr)})."},
-        ]
-        if dataset is not None and cheapest.variant.model == best.variant.model:
-            ladder_gains = _collect_ladder_gains(
-                cheapest.variant.variant_key, best.variant.variant_key, dataset,
+        cheapest_reason = {
+            "code": "cheapest_eligible",
+            "detail": f"Cheapest option meeting your needs ({fmt_lakh(cheapest.variant.price_inr)}).",
+        }
+        covered: set[str] = set()
+        if cheapest.variant.model == best.variant.model:
+            reasons_list = [cheapest_reason]
+            if dataset is not None:
+                adds = _collect_ladder_gains(
+                    cheapest.variant.variant_key, best.variant.variant_key, dataset, needs,
+                    limit=MAX_TOP_PICK_ADDS,
+                )
+                if adds:
+                    reasons_list.append({"code": "ladder_gives_up", "detail": f"What the top pick adds over this: {join_list(adds)}."})
+        else:
+            # Different model: lead with what the saving costs in safety and features
+            lacks = _lacks_vs_top_pick(best.variant, cheapest.variant, needs)[:MAX_TOP_PICK_ADDS]
+            saving = f"{fmt_lakh(savings)} less than the top pick ({_car_name(best.variant)})"
+            main = (
+                f"{saving}, but: {join_list([l['short'] for l in lacks])}."
+                if lacks else f"{saving}."
             )
-            if ladder_gains:
-                reasons_list.append({"code": "ladder_gives_up", "detail": f"What the top pick adds over this: {ladder_gains}."})
+            reasons_list = [{"code": "saving_with_compromises", "detail": main}, cheapest_reason]
+            for l in lacks:
+                covered |= _COVERED_BY.get(l["code"], set())
         slots.append(_build_slot(
             "dont_overpay", cheapest, reasons_list, needs,
-            savings_vs_best=savings,
+            savings_vs_best=savings, covered_codes=covered,
         ))
 
-    # Relative labels follow the order the buyer reads the cards, not the raw rank
-    for i, slot in enumerate(slots):
-        slot.metrics["relative_label"] = _assign_label(i)
+    # Name the cars without ESP that the top pick's "ESP standard" reason refers to
+    _name_esp_gaps(
+        slots[0],
+        shown=[ranked_map[s.variant_key].variant for s in slots[1:]],
+        eligible=[rv.variant for rv in ranked[1:]],
+    )
+
+    # Relative fit labels only on the cards that compete for the top spot, in reading order;
+    # in-between and don't-overpay cards are defined by their price, not their fit.
+    labelled = 0
+    for slot in slots:
+        if slot.slot in ("best_match", "same_model", "strong_alternative"):
+            slot.metrics["relative_label"] = _assign_label(labelled)
+            labelled += 1
+        else:
+            slot.metrics.pop("relative_label", None)
 
     # --- not_recommended: near misses only ---
     why_not = _pick_why_not(all_eligibility, all_variants, eligible_keys, needs)
