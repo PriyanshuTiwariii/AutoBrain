@@ -53,9 +53,18 @@ REQUIRED_DICT_COLS = {"file", "column", "type", "meaning_and_rules"}
 # Fields to check for completeness (variant CSV)
 COMPLETENESS_FIELDS = [
     "price_inr", "seats", "range_claimed_km", "range_maker_realworld_km",
-    "range_tested_km", "efficiency_km_per_kwh", "ncap_status", "esp",
-    "charger_included", "charger_cost_inr", "adaptive_suspension",
+    "range_tested_km", "efficiency_km_per_kwh",
+    "charger_cost_inr",
 ]
+
+# Enum fields where "Not stated" / "Not listed" count as unknown, not present
+COMPLETENESS_ENUM_FIELDS = [
+    "esp", "adas", "camera", "sunroof", "ventilated_front",
+    "adaptive_suspension", "charger_included", "ncap_status",
+    "battery_warranty",
+]
+
+_UNKNOWN_VALUES = {"Not stated", "Not listed"}
 
 MANIFEST_COUNT_KEYS = {
     "variants": "autobrain_engine_variants.csv",
@@ -252,6 +261,37 @@ def validate_release(release_dir: Path) -> ValidationReport:
         present = sum(1 for r in variant_rows if r.get(field, ""))
         missing = len(variant_rows) - present
         completeness[field] = {"present": present, "missing": missing}
+
+    # Enum fields: "Not stated" / "Not listed" count as unknown
+    for field in COMPLETENESS_ENUM_FIELDS:
+        known = 0
+        unknown = 0
+        blank = 0
+        for r in variant_rows:
+            val = r.get(field, "")
+            if not val:
+                blank += 1
+            elif val in _UNKNOWN_VALUES:
+                unknown += 1
+            else:
+                known += 1
+        completeness[field] = {"known": known, "unknown": unknown, "blank": blank}
+
+    # Efficiency split by basis
+    eff_independent = sum(
+        1 for r in variant_rows
+        if r.get("efficiency_basis", "") == "Independent test"
+    )
+    eff_maker = sum(
+        1 for r in variant_rows
+        if r.get("efficiency_basis", "") == "Maker real-world claim (estimate)"
+    )
+    eff_none = len(variant_rows) - eff_independent - eff_maker
+    completeness["efficiency_basis"] = {
+        "independent_test": eff_independent,
+        "maker_estimate": eff_maker,
+        "none": eff_none,
+    }
 
     return ValidationReport(
         release=release,
