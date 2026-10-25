@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Result",
+  "type": "object",
+  "required": [
+    "result_id",
+    "dataset_version",
+    "engine_version",
+    "needs_summary",
+    "slots",
+    "unknowns",
+    "disclaimer"
+  ],
+  "properties": {
+    "result_id": {
+      "type": "string"
+    },
+    "dataset_version": {
+      "type": "string"
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "needs_summary": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "slots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "slot",
+          "variant_key",
+          "match_score",
+          "confidence",
+          "price_inr",
+          "price_status",
+          "metrics",
+          "reasons",
+          "tradeoffs",
+          "watch_outs"
+        ],
+        "properties": {
+          "slot": {
+            "enum": [
+              "best_match",
+              "strong_alternative",
+              "in_between",
+              "dont_overpay",
+              "not_recommended"
+            ]
+          },
+          "variant_key": {
+            "type": "string"
+          },
+          "match_score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "confidence": {
+            "enum": [
+              "High",
+              "Medium",
+              "Low"
+            ]
+          },
+          "price_inr": {
+            "type": "integer"
+          },
+          "price_status": {
+            "enum": [
+              "verified",
+              "corroborated",
+              "pending"
+            ]
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "number",
+                "string",
+                "null"
+              ]
+            }
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "code"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "tradeoffs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "code"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "watch_outs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "savings_vs_best_inr": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "gap_filler_accessories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "accessory_key": {
+                  "type": "string"
+                },
+                "price_inr": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "disclaimer": {
+      "type": "string"
+    }
+  }
+}

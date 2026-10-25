@@ -1,0 +1,17 @@
+{
+  "release": "2026-10-25",
+  "built_at": "2026-10-25T07:32:08",
+  "source": "AutoBrain_EV_Data.xlsx",
+  "counts": {
+    "variants": 87,
+    "ladder_steps": 54,
+    "accessories": 794,
+    "dictionary_rows": 26
+  },
+  "files": {
+    "autobrain_engine_variants.csv": "0102d48e150fac4714bd876854785f6546f9f82488ce89ba4886e925ee660752",
+    "autobrain_variant_ladder.csv": "2bcfb02322ae9153ac9f31a9317cd3fe849e31d82b928358743d2558a63755dd",
+    "autobrain_accessories.csv": "d3af852f5f30680bcb38628f8f3e994de20fbe81f986c6694f68a0e9f598d846",
+    "autobrain_data_dictionary.csv": "8d40c4322cafe19d6c0ba16f56067170fbd84b872d2d556138ee72b36a6355f5"
+  }
+}
