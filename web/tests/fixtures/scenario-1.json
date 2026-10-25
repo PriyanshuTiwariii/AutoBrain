@@ -1,0 +1,274 @@
+{
+  "result_id": "d4d0b1a056fc54e5",
+  "dataset_version": "2026-10-25-r2",
+  "engine_version": "0.1.0",
+  "needs_summary": [
+    "Budget: ₹10 lakh",
+    "Seats: 4+",
+    "Daily driving: 30 km",
+    "Home charging: yes",
+    "Priority: balanced"
+  ],
+  "slots": [
+    {
+      "slot": "best_match",
+      "variant_key": "TATA-PUNCHEV-SMART30-30",
+      "match_score": 60,
+      "confidence": "Medium",
+      "price_inr": 979000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Punch.ev",
+        "variant": "Smart 30",
+        "body_type": "SUV",
+        "drive": "FWD",
+        "ncap_status": "Rated, applies",
+        "ncap_display": "31.09/32 adult (Bharat NCAP, covers this version)",
+        "range_tested_km": null,
+        "range_maker_realworld_km": 260.0,
+        "range_claimed_km": 365,
+        "efficiency_km_per_kwh": 8.67,
+        "efficiency_basis": "Maker real-world claim (estimate)",
+        "efficiency_basis_label": "maker estimate",
+        "efficiency_display": "8.67 km/kWh (maker estimate)",
+        "range_display": "260+ km (maker real-world)",
+        "range_test_vehicle": "Not tested",
+        "range_test_note": null,
+        "battery_kwh": 30.0,
+        "running_cost_inr_per_km": 1.08,
+        "tariff_basis": "90% home ₹8/kWh, 10% public DC ₹22/kWh",
+        "cost_to_own_5yr_inr": 1038000,
+        "electricity_5yr_inr": 59000,
+        "charger_note": "Included",
+        "dc_avg_kw_est": 42.0,
+        "dc_display": "42 kW avg, about 16 min to add 100 km",
+        "minutes_dc_per_100km": 16,
+        "seats": 5,
+        "boot_l": 366,
+        "ground_clearance_mm": 195,
+        "airbags": 6,
+        "adaptive_suspension": "Not stated",
+        "relative_label": "Strongest fit"
+      },
+      "reasons": [
+        {
+          "code": "best_crash_score",
+          "detail": "Highest crash-test score (31.09/32 adult)."
+        },
+        {
+          "code": "esp_standard",
+          "detail": "ESP standard; not listed by maker for the Tiago.ev Pure+ 24 and Tiago.ev Smart 19."
+        },
+        {
+          "code": "best_dc",
+          "detail": "Fastest DC charging (42 kW avg)."
+        },
+        {
+          "code": "range_covers_need",
+          "detail": "Range of 260 km (maker real-world) covers your 30 km/day with 230 km spare."
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [
+        "Battery warranty 8 yrs/1.6L km (not lifetime)"
+      ],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "strong_alternative",
+      "variant_key": "TATA-TIAGOEV-PUREPLUS24-24",
+      "match_score": 52,
+      "confidence": "Medium",
+      "price_inr": 964000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Tiago.ev",
+        "variant": "Pure+ 24",
+        "body_type": "Hatchback",
+        "drive": "Not stated",
+        "ncap_status": "Not tested",
+        "ncap_display": "No Bharat NCAP crash test for this EV",
+        "range_tested_km": 187,
+        "range_maker_realworld_km": 205.0,
+        "range_claimed_km": 285,
+        "efficiency_km_per_kwh": 7.77,
+        "efficiency_basis": "Independent test",
+        "efficiency_basis_label": "tested on an earlier version",
+        "efficiency_display": "7.77 km/kWh (tested on an earlier version)",
+        "range_display": "187 km (tested on an earlier version)",
+        "range_test_vehicle": "Earlier version",
+        "range_test_note": "Tested on the Tiago.ev before the May 2026 facelift; same 24 kWh battery size",
+        "battery_kwh": 24.0,
+        "running_cost_inr_per_km": 1.21,
+        "tariff_basis": "90% home ₹8/kWh, 10% public DC ₹22/kWh",
+        "cost_to_own_5yr_inr": 1030000,
+        "electricity_5yr_inr": 66000,
+        "charger_note": "Included",
+        "dc_avg_kw_est": 28.8,
+        "dc_display": "28.8 kW avg, about 27 min to add 100 km",
+        "minutes_dc_per_100km": 27,
+        "seats": 5,
+        "boot_l": 240,
+        "ground_clearance_mm": null,
+        "airbags": 6,
+        "adaptive_suspension": "Not stated",
+        "relative_label": "Close second"
+      },
+      "reasons": [
+        {
+          "code": "lifetime_warranty",
+          "detail": "Lifetime battery warranty (first owner); the top pick's is not."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "code": "price_vs_top_pick",
+          "detail": "₹15,000 less than the top pick."
+        },
+        {
+          "code": "crash_vs_top_pick",
+          "detail": "No Bharat NCAP crash test (top pick: 31.09/32 adult)."
+        },
+        {
+          "code": "lacks_esp",
+          "detail": "ESP not listed by maker (top pick has ESP)."
+        },
+        {
+          "code": "lacks_less_range",
+          "detail": "Less range (187 km tested on an earlier version vs 260 km maker real-world on the top pick)."
+        }
+      ],
+      "watch_outs": [
+        "ESP not listed",
+        "No Bharat NCAP crash test",
+        "Range/efficiency test was on an earlier version of this car",
+        "Tested range only 66% of claim",
+        "Slow DC fast-charging"
+      ],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "dont_overpay",
+      "variant_key": "TATA-TIAGOEV-SMART19-192",
+      "match_score": 51,
+      "confidence": "Medium",
+      "price_inr": 699000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Tiago.ev",
+        "variant": "Smart 19",
+        "body_type": "Hatchback",
+        "drive": "Not stated",
+        "ncap_status": "Not tested",
+        "ncap_display": "No Bharat NCAP crash test for this EV",
+        "range_tested_km": null,
+        "range_maker_realworld_km": 160.0,
+        "range_claimed_km": 226,
+        "efficiency_km_per_kwh": 8.33,
+        "efficiency_basis": "Maker real-world claim (estimate)",
+        "efficiency_basis_label": "maker estimate",
+        "efficiency_display": "8.33 km/kWh (maker estimate)",
+        "range_display": "160+ km (maker real-world)",
+        "range_test_vehicle": "Not tested",
+        "range_test_note": null,
+        "battery_kwh": 19.2,
+        "running_cost_inr_per_km": 1.13,
+        "tariff_basis": "90% home ₹8/kWh, 10% public DC ₹22/kWh",
+        "cost_to_own_5yr_inr": 761000,
+        "electricity_5yr_inr": 62000,
+        "charger_note": "Included",
+        "dc_avg_kw_est": 23.0,
+        "dc_display": "23 kW avg, about 31 min to add 100 km",
+        "minutes_dc_per_100km": 31,
+        "seats": 5,
+        "boot_l": 240,
+        "ground_clearance_mm": null,
+        "airbags": 6,
+        "adaptive_suspension": "Not stated"
+      },
+      "reasons": [
+        {
+          "code": "saving_with_compromises",
+          "detail": "₹2.80 lakh less than the top pick (Punch.ev Smart 30), but: ESP not listed by maker (top pick has ESP), no Bharat NCAP crash test (top pick: 31.09/32 adult) and less range (160 km maker real-world vs 260 km maker real-world on the top pick)."
+        },
+        {
+          "code": "cheapest_eligible",
+          "detail": "Cheapest option meeting your needs (₹6.99 lakh)."
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [
+        "ESP not listed",
+        "No Bharat NCAP crash test",
+        "Battery warranty 8 yrs/1.6L km (not lifetime)",
+        "Slow DC fast-charging"
+      ],
+      "savings_vs_best_inr": 280000,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "not_recommended",
+      "variant_key": "TATA-TIAGOEV-CREATIVEPLUS24-24",
+      "match_score": 0,
+      "confidence": "",
+      "price_inr": 1009000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Tiago.ev",
+        "variant": "Creative+ 24",
+        "seats": 5
+      },
+      "reasons": [
+        {
+          "code": "excluded",
+          "detail": "Over budget: ₹10.09 lakh vs your ₹10 lakh budget"
+        },
+        {
+          "code": "adds_beyond_eligible",
+          "detail": "Has what none of your eligible options is confirmed to have: 360° camera."
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "not_recommended",
+      "variant_key": "TATA-PUNCHEV-SMARTPLUS30-30",
+      "match_score": 0,
+      "confidence": "",
+      "price_inr": 1039000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Punch.ev",
+        "variant": "Smart+ 30",
+        "seats": 5
+      },
+      "reasons": [
+        {
+          "code": "excluded",
+          "detail": "Over budget: ₹10.39 lakh vs your ₹10 lakh budget"
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    }
+  ],
+  "unknowns": [],
+  "disclaimer": "This recommendation is based on publicly available data as of the dataset release date. Prices are ex-showroom and exclude registration, insurance, offers and financing. Verify all details with the dealer before purchasing."
+}

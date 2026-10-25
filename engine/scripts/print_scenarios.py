@@ -84,10 +84,8 @@ def print_result(title, needs):
             print(f"  │ Efficiency: {m['efficiency_display']}")
         if m.get("range_test_note"):
             print(f"  │ Test note: {m['range_test_note']}")
-        dc = m.get("dc_avg_kw_est")
-        mins = m.get("minutes_dc_per_100km")
-        if dc:
-            print(f"  │ DC charging: {dc:.0f} kW avg" + (f", {mins} min/100 km" if mins else ""))
+        if m.get("dc_display"):
+            print(f"  │ DC charging: {m['dc_display']}")
         seats = m.get("seats")
         if seats:
             print(f"  │ Seats: {seats}")

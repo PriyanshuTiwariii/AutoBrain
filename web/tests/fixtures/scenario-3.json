@@ -1,0 +1,180 @@
+{
+  "result_id": "8e23a92ccd618946",
+  "dataset_version": "2026-10-25-r2",
+  "engine_version": "0.1.0",
+  "needs_summary": [
+    "Budget: ₹25 lakh",
+    "Seats: 7+",
+    "Daily driving: 40 km",
+    "Home charging: yes",
+    "Longest regular trip: 300 km",
+    "Priority: balanced"
+  ],
+  "slots": [
+    {
+      "slot": "best_match",
+      "variant_key": "MAHINDRA-XEV9S-PACKONEABOVE-79",
+      "match_score": 56,
+      "confidence": "Medium",
+      "price_inr": 2265000,
+      "price_status": "corroborated",
+      "metrics": {
+        "brand": "Mahindra",
+        "model": "XEV 9S",
+        "variant": "Pack One Above 79 kWh",
+        "body_type": "SUV",
+        "drive": "RWD",
+        "ncap_status": "Not tested",
+        "ncap_display": "No Bharat NCAP crash test for this EV",
+        "range_tested_km": 478,
+        "range_maker_realworld_km": 500.0,
+        "range_claimed_km": 679,
+        "efficiency_km_per_kwh": 6.33,
+        "efficiency_basis": "Maker real-world claim (estimate)",
+        "efficiency_basis_label": "maker estimate",
+        "efficiency_display": "6.33 km/kWh (maker estimate)",
+        "range_display": "478 km (independent test)",
+        "range_test_vehicle": "Same model",
+        "range_test_note": null,
+        "battery_kwh": 79.0,
+        "running_cost_inr_per_km": 1.48,
+        "tariff_basis": "90% home ₹8/kWh, 10% public DC ₹22/kWh",
+        "cost_to_own_5yr_inr": 2433000,
+        "electricity_5yr_inr": 108000,
+        "charger_note": "~₹60,000 (not in price)",
+        "dc_avg_kw_est": 142.2,
+        "dc_display": "142.2 kW avg, about 7 min to add 100 km",
+        "minutes_dc_per_100km": 7,
+        "seats": 7,
+        "boot_l": 527,
+        "ground_clearance_mm": 205,
+        "airbags": 6,
+        "adaptive_suspension": "No",
+        "relative_label": "Strongest fit"
+      },
+      "reasons": [
+        {
+          "code": "best_dc",
+          "detail": "Fastest DC charging (142 kW avg)."
+        },
+        {
+          "code": "range_covers_need",
+          "detail": "Range of 478 km (tested) covers your 300 km trip with 178 km spare."
+        },
+        {
+          "code": "lifetime_warranty",
+          "detail": "Lifetime battery warranty (first owner)."
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [
+        "No Bharat NCAP crash test",
+        "Wall charger not in price (~₹60,000)",
+        "Price corroborated, confirm before buying"
+      ],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "in_between",
+      "variant_key": "MAHINDRA-XEV9S-PACKONEABOVE-59",
+      "match_score": 54,
+      "confidence": "Medium",
+      "price_inr": 2065000,
+      "price_status": "corroborated",
+      "metrics": {
+        "brand": "Mahindra",
+        "model": "XEV 9S",
+        "variant": "Pack One Above 59 kWh",
+        "body_type": "SUV",
+        "drive": "RWD",
+        "ncap_status": "Not tested",
+        "ncap_display": "No Bharat NCAP crash test for this EV",
+        "range_tested_km": null,
+        "range_maker_realworld_km": 400.0,
+        "range_claimed_km": 521,
+        "efficiency_km_per_kwh": 6.78,
+        "efficiency_basis": "Maker real-world claim (estimate)",
+        "efficiency_basis_label": "maker estimate",
+        "efficiency_display": "6.78 km/kWh (maker estimate)",
+        "range_display": "400+ km (maker real-world)",
+        "range_test_vehicle": "Not tested",
+        "range_test_note": null,
+        "battery_kwh": 59.0,
+        "running_cost_inr_per_km": 1.39,
+        "tariff_basis": "90% home ₹8/kWh, 10% public DC ₹22/kWh",
+        "cost_to_own_5yr_inr": 2226000,
+        "electricity_5yr_inr": 101000,
+        "charger_note": "~₹60,000 (not in price)",
+        "dc_avg_kw_est": 106.2,
+        "dc_display": "106.2 kW avg, about 8 min to add 100 km",
+        "minutes_dc_per_100km": 8,
+        "seats": 7,
+        "boot_l": 527,
+        "ground_clearance_mm": 205,
+        "airbags": 6,
+        "adaptive_suspension": "No"
+      },
+      "reasons": [
+        {
+          "code": "in_between",
+          "detail": "You give up bigger battery (59 → 79 kWh) and more claimed range (521 → 679 km) for ₹2 lakh less."
+        },
+        {
+          "code": "range_tradeoff",
+          "detail": "Range 400 km (maker real-world) vs 478 km (tested) on the top pick; covers your 300 km trip with 100 km spare."
+        },
+        {
+          "code": "factory_only",
+          "detail": "Factory-only (can’t add later): bigger battery and more range."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "code": "range_only_claimed",
+          "detail": "No independent range test; only maker claim."
+        }
+      ],
+      "watch_outs": [
+        "No Bharat NCAP crash test",
+        "Wall charger not in price (~₹60,000)",
+        "Price corroborated, confirm before buying"
+      ],
+      "savings_vs_best_inr": 200000,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "not_recommended",
+      "variant_key": "MAHINDRA-XEV9S-PACKTWOABOVE-70",
+      "match_score": 0,
+      "confidence": "",
+      "price_inr": 2505000,
+      "price_status": "corroborated",
+      "metrics": {
+        "brand": "Mahindra",
+        "model": "XEV 9S",
+        "variant": "Pack Two Above 70 kWh (7-seater)",
+        "seats": 7
+      },
+      "reasons": [
+        {
+          "code": "excluded",
+          "detail": "Over budget: ₹25.65 lakh incl. charger vs your ₹25 lakh budget"
+        },
+        {
+          "code": "adds_beyond_eligible",
+          "detail": "Has what none of your eligible options is confirmed to have: ADAS, ventilated seats and 360° camera."
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    }
+  ],
+  "unknowns": [],
+  "disclaimer": "This recommendation is based on publicly available data as of the dataset release date. Prices are ex-showroom and exclude registration, insurance, offers and financing. Verify all details with the dealer before purchasing."
+}

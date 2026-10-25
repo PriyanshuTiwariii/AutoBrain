@@ -1,7 +1,8 @@
 """Flexible slot assignment: best_match, strong_alternative, same_model, in_between, dont_overpay, not_recommended."""
 from __future__ import annotations
 
-import uuid
+import hashlib
+import json
 from typing import Any, TYPE_CHECKING
 
 from .eligibility import (
@@ -79,6 +80,28 @@ def _range_display(v: Variant) -> str:
     return "not stated"
 
 
+def _ncap_display(v: Variant) -> str:
+    """Crash rating with its status label, so a score is never shown without what it covers.
+    A petrol/diesel rating is never applied to an EV (AGENTS.md)."""
+    score = f"{fmt_ncap(v.ncap_adult_32)} adult" if v.ncap_adult_32 else None
+    if v.ncap_status == "Rated, applies" and score:
+        return f"{score} (Bharat NCAP, covers this version)"
+    if v.ncap_status == "Rated, coverage unconfirmed" and score:
+        return f"{score} (Bharat NCAP, may not cover this version)"
+    if v.ncap_status == "Not tested":
+        return "No Bharat NCAP crash test for this EV"
+    return "Crash rating not stated by maker"
+
+
+def _dc_display(v: Variant) -> str | None:
+    if not v.dc_avg_kw_est:
+        return None
+    text = f"{v.dc_avg_kw_est:g} kW avg"
+    if v.minutes_dc_per_100km_default:
+        text += f", about {v.minutes_dc_per_100km_default} min to add 100 km"
+    return text
+
+
 def _efficiency_basis_label(v: Variant) -> str:
     """Short basis for an efficiency figure, worded like the range: independent test,
     tested on an earlier version, or maker estimate."""
@@ -132,6 +155,13 @@ def _build_metrics(rv: RankedVariant) -> dict[str, Any]:
     v = rv.variant
     c = rv.costs
     return {
+        "brand": v.brand,
+        "model": v.model,
+        "variant": v.variant,
+        "body_type": v.body_type,
+        "drive": v.drive,
+        "ncap_status": v.ncap_status,
+        "ncap_display": _ncap_display(v),
         "range_tested_km": v.range_tested_km,
         "range_maker_realworld_km": v.range_maker_realworld_km,
         "range_claimed_km": v.range_claimed_km,
@@ -150,6 +180,7 @@ def _build_metrics(rv: RankedVariant) -> dict[str, Any]:
         "electricity_5yr_inr": c.electricity_5yr_inr,
         "charger_note": c.charger_note,
         "dc_avg_kw_est": v.dc_avg_kw_est,
+        "dc_display": _dc_display(v),
         "minutes_dc_per_100km": v.minutes_dc_per_100km_default,
         "seats": v.seats,
         "boot_l": v.boot_l,
@@ -602,7 +633,7 @@ def _pick_why_not(
             confidence="",  # no confidence for excluded
             price_inr=v.price_inr or 0,
             price_status=v.price_status,
-            metrics={"model": v.model, "variant": v.variant, "seats": v.seats},
+            metrics={"brand": v.brand, "model": v.model, "variant": v.variant, "seats": v.seats},
             reasons=[ReasonCode(code=r["code"], detail=r.get("detail")) for r in reasons],
             tradeoffs=[],
             watch_outs=[],
@@ -853,6 +884,19 @@ def _needs_summary(needs: Needs) -> list[str]:
     return lines
 
 
+def make_result_id(needs: Needs, dataset_version: str, engine_version: str) -> str:
+    """Deterministic id of a result: a hash of the Needs, the data release and the engine version.
+
+    The same inputs always give the same id, so a result can be reproduced and compared.
+    It identifies a result, never a buyer: two buyers with identical Needs share it.
+    """
+    canonical = json.dumps(
+        {"needs": needs.model_dump(mode="json"), "release": dataset_version, "engine": engine_version},
+        sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+
+
 def build_result(
     needs: Needs,
     variants: list[Variant],
@@ -885,7 +929,7 @@ def build_result(
         unknowns.insert(0, render_tradeoff("no_qualifying_vehicle"))
 
     return Result(
-        result_id=str(uuid.uuid4()),
+        result_id=make_result_id(needs, dataset_version, engine_version),
         dataset_version=dataset_version,
         engine_version=engine_version,
         needs_summary=_needs_summary(needs),

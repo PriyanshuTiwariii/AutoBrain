@@ -1,0 +1,18 @@
+{
+  "result_id": "9942b157b2f22335",
+  "dataset_version": "2026-10-25-r2",
+  "engine_version": "0.1.0",
+  "needs_summary": [
+    "Budget: ₹8 lakh",
+    "Seats: 7+",
+    "Daily driving: 40 km",
+    "Home charging: yes",
+    "Must-haves: awd",
+    "Priority: balanced"
+  ],
+  "slots": [],
+  "unknowns": [
+    "None of the vehicles in our current dataset meet all your requirements. Here's why, and what to verify."
+  ],
+  "disclaimer": "This recommendation is based on publicly available data as of the dataset release date. Prices are ex-showroom and exclude registration, insurance, offers and financing. Verify all details with the dealer before purchasing."
+}

@@ -317,3 +317,25 @@ def test_near_miss_names_features_eligible_options_lack(dataset):
     nm = {s.variant_key: s for s in result.slots if s.slot == "not_recommended"}
     extra = [r.detail for r in nm["TATA-TIAGOEV-CREATIVEPLUS24-24"].reasons if r.code == "adds_beyond_eligible"]
     assert extra == ["Has what none of your eligible options is confirmed to have: 360° camera."]
+
+
+def test_cards_carry_names_and_crash_status_label(dataset):
+    """The website shows names and the crash-status label straight from the Result."""
+    for kwargs in (
+        dict(budget_max_inr=1000000, seats_min=4, daily_km=30, home_charging="yes"),
+        dict(budget_max_inr=2500000, seats_min=7, daily_km=40, home_charging="yes"),
+    ):
+        result = build_result(Needs(**kwargs), dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
+        for s in result.slots:
+            v = dataset.get_variant(s.variant_key)
+            assert (s.metrics["brand"], s.metrics["model"], s.metrics["variant"]) == (v.brand, v.model, v.variant)
+            if s.slot == "not_recommended":
+                continue
+            assert s.metrics["ncap_status"] == v.ncap_status
+            shown = s.metrics["ncap_display"]
+            if v.ncap_status == "Rated, applies":
+                assert shown == f"{v.ncap_adult_32:g}/32 adult (Bharat NCAP, covers this version)"
+            elif v.ncap_status == "Not tested":
+                assert shown == "No Bharat NCAP crash test for this EV"
+            else:
+                assert "may not cover" in shown or "not stated" in shown

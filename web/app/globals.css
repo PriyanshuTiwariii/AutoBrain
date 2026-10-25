@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+a { color: #0B5F87; }
+a:hover { color: #08445F; }
+
+/* "Download as PDF" is the browser's print dialog: keep colours, keep cards whole, drop the buttons */
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; }
+  @page { margin: 12mm; }
+  .no-break { break-inside: avoid; }
+}

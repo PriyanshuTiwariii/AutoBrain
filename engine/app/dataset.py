@@ -141,7 +141,9 @@ class Dataset:
         ladder: list[LadderStep],
         accessories: list[Accessory],
         validation: ValidationReport,
+        manifest: Optional[dict] = None,
     ) -> None:
+        self.manifest = manifest or {}
         self.version = version
         self.engine_version = ENGINE_VERSION
         self.variants = variants
@@ -234,4 +236,5 @@ def load_dataset(release_dir: Path) -> Dataset:
         ladder=ladder,
         accessories=accessories,
         validation=report,
+        manifest=manifest,
     )

@@ -1,0 +1,302 @@
+{
+  "result_id": "0172c408c2d679b0",
+  "dataset_version": "2026-10-25-r2",
+  "engine_version": "0.1.0",
+  "needs_summary": [
+    "Budget: ₹15 lakh",
+    "Seats: 4+",
+    "Daily driving: 40 km",
+    "Home charging: no",
+    "Priority: balanced"
+  ],
+  "slots": [
+    {
+      "slot": "best_match",
+      "variant_key": "TATA-PUNCHEV-EMPOWEREDPLUSS40-40",
+      "match_score": 74,
+      "confidence": "High",
+      "price_inr": 1299000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Punch.ev",
+        "variant": "Empowered+ S 40",
+        "body_type": "SUV",
+        "drive": "FWD",
+        "ncap_status": "Rated, applies",
+        "ncap_display": "31.09/32 adult (Bharat NCAP, covers this version)",
+        "range_tested_km": 304,
+        "range_maker_realworld_km": 335.0,
+        "range_claimed_km": 468,
+        "efficiency_km_per_kwh": 7.61,
+        "efficiency_basis": "Independent test",
+        "efficiency_basis_label": "independent test",
+        "efficiency_display": "7.61 km/kWh (independent test)",
+        "range_display": "304 km (independent test)",
+        "range_test_vehicle": "Same model",
+        "range_test_note": null,
+        "battery_kwh": 40.0,
+        "running_cost_inr_per_km": 2.71,
+        "tariff_basis": "90% public DC ₹22/kWh, 10% home ₹8/kWh",
+        "cost_to_own_5yr_inr": 1497000,
+        "electricity_5yr_inr": 198000,
+        "charger_note": "Included",
+        "dc_avg_kw_est": 56.0,
+        "dc_display": "56 kW avg, about 14 min to add 100 km",
+        "minutes_dc_per_100km": 14,
+        "seats": 5,
+        "boot_l": 366,
+        "ground_clearance_mm": 195,
+        "airbags": 6,
+        "adaptive_suspension": "Not stated",
+        "relative_label": "Strongest fit"
+      },
+      "reasons": [
+        {
+          "code": "best_crash_score",
+          "detail": "Highest crash-test score (31.09/32 adult)."
+        },
+        {
+          "code": "esp_standard",
+          "detail": "ESP standard; not listed by maker for the Tiago.ev Pure+ 24, Tiago.ev Smart 19, Tiago.ev Pure+ 19 and 4 more eligible options."
+        },
+        {
+          "code": "best_dc",
+          "detail": "Fastest DC charging (56 kW avg)."
+        },
+        {
+          "code": "range_covers_need",
+          "detail": "Range of 304 km (tested) covers your 40 km/day with 264 km spare."
+        },
+        {
+          "code": "lifetime_warranty",
+          "detail": "Lifetime battery warranty (first owner)."
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [
+        "Tested range only 65% of claim"
+      ],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "strong_alternative",
+      "variant_key": "TATA-NEXONEV-CREATIVE45-45",
+      "match_score": 68,
+      "confidence": "High",
+      "price_inr": 1434000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Nexon.ev",
+        "variant": "Creative 45",
+        "body_type": "SUV",
+        "drive": "FWD",
+        "ncap_status": "Rated, applies",
+        "ncap_display": "29.86/32 adult (Bharat NCAP, covers this version)",
+        "range_tested_km": 350,
+        "range_maker_realworld_km": 350.0,
+        "range_claimed_km": 489,
+        "efficiency_km_per_kwh": 7.79,
+        "efficiency_basis": "Independent test",
+        "efficiency_basis_label": "independent test",
+        "efficiency_display": "7.79 km/kWh (independent test)",
+        "range_display": "350 km (independent test)",
+        "range_test_vehicle": "Same model",
+        "range_test_note": null,
+        "battery_kwh": 45.0,
+        "running_cost_inr_per_km": 2.64,
+        "tariff_basis": "90% public DC ₹22/kWh, 10% home ₹8/kWh",
+        "cost_to_own_5yr_inr": 1627000,
+        "electricity_5yr_inr": 193000,
+        "charger_note": "Not needed (no home charging)",
+        "dc_avg_kw_est": 47.2,
+        "dc_display": "47.2 kW avg, about 16 min to add 100 km",
+        "minutes_dc_per_100km": 16,
+        "seats": 5,
+        "boot_l": 350,
+        "ground_clearance_mm": 190,
+        "airbags": 6,
+        "adaptive_suspension": "Not stated",
+        "relative_label": "Close second"
+      },
+      "reasons": [
+        {
+          "code": "better_range",
+          "detail": "Range 350 km (tested) vs 304 km (tested) on the top pick."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "code": "price_vs_top_pick",
+          "detail": "₹1.35 lakh more than the top pick."
+        },
+        {
+          "code": "crash_scores",
+          "detail": "Crash test: 29.86/32 adult vs 31.09/32 on the top pick."
+        },
+        {
+          "code": "lacks_sunroof",
+          "detail": "No sunroof (top pick has it)."
+        },
+        {
+          "code": "lacks_ventilated_seats",
+          "detail": "No ventilated seats (top pick has it)."
+        },
+        {
+          "code": "lacks_camera_360",
+          "detail": "No 360° camera (top pick has it)."
+        }
+      ],
+      "watch_outs": [],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "in_between",
+      "variant_key": "TATA-PUNCHEV-EMPOWERED40-40",
+      "match_score": 72,
+      "confidence": "High",
+      "price_inr": 1269000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Punch.ev",
+        "variant": "Empowered 40",
+        "body_type": "SUV",
+        "drive": "FWD",
+        "ncap_status": "Rated, applies",
+        "ncap_display": "31.09/32 adult (Bharat NCAP, covers this version)",
+        "range_tested_km": 304,
+        "range_maker_realworld_km": 335.0,
+        "range_claimed_km": 468,
+        "efficiency_km_per_kwh": 7.61,
+        "efficiency_basis": "Independent test",
+        "efficiency_basis_label": "independent test",
+        "efficiency_display": "7.61 km/kWh (independent test)",
+        "range_display": "304 km (independent test)",
+        "range_test_vehicle": "Same model",
+        "range_test_note": null,
+        "battery_kwh": 40.0,
+        "running_cost_inr_per_km": 2.71,
+        "tariff_basis": "90% public DC ₹22/kWh, 10% home ₹8/kWh",
+        "cost_to_own_5yr_inr": 1467000,
+        "electricity_5yr_inr": 198000,
+        "charger_note": "Included",
+        "dc_avg_kw_est": 56.0,
+        "dc_display": "56 kW avg, about 14 min to add 100 km",
+        "minutes_dc_per_100km": 14,
+        "seats": 5,
+        "boot_l": 366,
+        "ground_clearance_mm": 195,
+        "airbags": 6,
+        "adaptive_suspension": "Not stated"
+      },
+      "reasons": [
+        {
+          "code": "in_between",
+          "detail": "You give up sunroof, ventilated front seats and leatherette seats for ₹30,000 less."
+        },
+        {
+          "code": "factory_only",
+          "detail": "Factory-only (can’t add later): sunroof and ventilated seats."
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [
+        "Tested range only 65% of claim"
+      ],
+      "savings_vs_best_inr": 30000,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "dont_overpay",
+      "variant_key": "TATA-PUNCHEV-SMART30-30",
+      "match_score": 67,
+      "confidence": "Medium",
+      "price_inr": 979000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Punch.ev",
+        "variant": "Smart 30",
+        "body_type": "SUV",
+        "drive": "FWD",
+        "ncap_status": "Rated, applies",
+        "ncap_display": "31.09/32 adult (Bharat NCAP, covers this version)",
+        "range_tested_km": null,
+        "range_maker_realworld_km": 260.0,
+        "range_claimed_km": 365,
+        "efficiency_km_per_kwh": 8.67,
+        "efficiency_basis": "Maker real-world claim (estimate)",
+        "efficiency_basis_label": "maker estimate",
+        "efficiency_display": "8.67 km/kWh (maker estimate)",
+        "range_display": "260+ km (maker real-world)",
+        "range_test_vehicle": "Not tested",
+        "range_test_note": null,
+        "battery_kwh": 30.0,
+        "running_cost_inr_per_km": 2.38,
+        "tariff_basis": "90% public DC ₹22/kWh, 10% home ₹8/kWh",
+        "cost_to_own_5yr_inr": 1152000,
+        "electricity_5yr_inr": 173000,
+        "charger_note": "Included",
+        "dc_avg_kw_est": 42.0,
+        "dc_display": "42 kW avg, about 16 min to add 100 km",
+        "minutes_dc_per_100km": 16,
+        "seats": 5,
+        "boot_l": 366,
+        "ground_clearance_mm": 195,
+        "airbags": 6,
+        "adaptive_suspension": "Not stated"
+      },
+      "reasons": [
+        {
+          "code": "cheapest_eligible",
+          "detail": "Cheapest option meeting your needs (₹9.79 lakh)."
+        },
+        {
+          "code": "ladder_gives_up",
+          "detail": "What the top pick adds over this: bigger battery (30 → 40 kWh), more claimed range (365 → 468 km), lifetime battery warranty (first owner), sunroof and ventilated front seats."
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [
+        "Battery warranty 8 yrs/1.6L km (not lifetime)"
+      ],
+      "savings_vs_best_inr": 320000,
+      "gap_filler_accessories": [],
+      "sources": []
+    },
+    {
+      "slot": "not_recommended",
+      "variant_key": "TATA-NEXONEV-FEARLESS45-45",
+      "match_score": 0,
+      "confidence": "",
+      "price_inr": 1534000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Nexon.ev",
+        "variant": "Fearless 45",
+        "seats": 5
+      },
+      "reasons": [
+        {
+          "code": "excluded",
+          "detail": "Over budget: ₹15.34 lakh vs your ₹15 lakh budget"
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    }
+  ],
+  "unknowns": [],
+  "disclaimer": "This recommendation is based on publicly available data as of the dataset release date. Prices are ex-showroom and exclude registration, insurance, offers and financing. Verify all details with the dealer before purchasing."
+}
