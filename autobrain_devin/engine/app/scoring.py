@@ -19,19 +19,25 @@ class RankedVariant(BaseModel):
     relative_label: str  # "Strongest fit", "Close second", etc.
 
 
+SLOW_DC_THRESHOLD_KW = 40  # variants below this are "slow DC"
+
 # ---------------------------------------------------------------------------
-# Fit score (0-100, 4 dimensions × 25 each)
+# Fit score — 4 dimensions, weights depend on priority
 # ---------------------------------------------------------------------------
 
-def _budget_score(variant: Variant, costs: CostBreakdown, budget: int) -> float:
-    """0-25: cheaper relative to budget = higher."""
+def _budget_score(variant: Variant, costs: CostBreakdown, budget: int, priority: str) -> float:
+    """Budget is a gate, not a goal. Small bonus for headroom; large bonus only when priority=cost."""
     total = costs.total_budget_cost_inr
     if total is None or budget <= 0:
         return 0.0
     ratio = total / budget
     if ratio > 1.0:
         return 0.0
-    return (1.0 - ratio) * 25.0
+    if priority == "cost":
+        # cost-priority: cheaper = much better (0-25)
+        return (1.0 - ratio) * 25.0
+    # balanced / other: flat 10 if within budget, small bonus for headroom
+    return 10.0 + max(0.0, (1.0 - ratio) * 5.0)
 
 
 def _range_score(variant: Variant, needs: Needs) -> float:
@@ -59,6 +65,18 @@ def _range_score(variant: Variant, needs: Needs) -> float:
     return max(0.0, ratio * 15.0)
 
 
+def _dc_charging_score(variant: Variant, needs: Needs) -> float:
+    """0-25: DC charging quality. Only significant when home_charging=no."""
+    if needs.home_charging != "no":
+        return 0.0  # not scored when home charging available
+    if variant.dc_avg_kw_est is None:
+        return 0.0
+    if variant.dc_avg_kw_est < SLOW_DC_THRESHOLD_KW:
+        return max(0.0, variant.dc_avg_kw_est / SLOW_DC_THRESHOLD_KW * 5.0)  # 0-5 for slow
+    # 5-25 for 40+ kW
+    return min(25.0, 5.0 + (variant.dc_avg_kw_est - SLOW_DC_THRESHOLD_KW) * 20.0 / 110.0)
+
+
 def _nice_to_have_score(variant: Variant, needs: Needs) -> float:
     """0-25: fraction of nice-to-have features that PASS."""
     if not needs.nice_to_haves:
@@ -75,6 +93,34 @@ def _nice_to_have_score(variant: Variant, needs: Needs) -> float:
 def _priority_score(variant: Variant, needs: Needs, costs: CostBreakdown) -> float:
     """0-25: how well variant performs on the buyer's stated priority."""
     p = needs.priority
+
+    if p == "balanced":
+        # Balanced: moderate credit for safety, range, features
+        score = 0.0
+        if variant.ncap_status == "Rated, applies":
+            score += 5.0
+        if variant.esp == "Yes":
+            score += 2.0
+        if variant.adas in ("L2", "L2+"):
+            score += 3.0
+        eff_range = variant.range_tested_km or (
+            int(variant.range_maker_realworld_km) if variant.range_maker_realworld_km else 0
+        )
+        if eff_range >= 400:
+            score += 5.0
+        elif eff_range >= 250:
+            score += 3.0
+        if variant.battery_warranty == "Lifetime (1st owner)":
+            score += 2.0
+        if variant.airbags and variant.airbags >= 6:
+            score += 2.0
+        if variant.camera in ("360°", "540°"):
+            score += 2.0
+        if variant.sunroof in ("Sunroof", "Panoramic", "Openable panoramic"):
+            score += 1.0
+        if variant.ventilated_front == "Yes":
+            score += 1.0
+        return min(25.0, score)
 
     if p == "safety":
         score = 0.0
@@ -146,7 +192,7 @@ def _priority_score(variant: Variant, needs: Needs, costs: CostBreakdown) -> flo
             score += 3.0
         return min(25.0, score)
 
-    return 12.5  # default neutral
+    return 12.5  # fallback neutral
 
 
 def compute_fit_score(
@@ -154,11 +200,16 @@ def compute_fit_score(
 ) -> int:
     """Compute overall fit score 0-100."""
     total = (
-        _budget_score(variant, costs, needs.budget_max_inr)
+        _budget_score(variant, costs, needs.budget_max_inr, needs.priority)
         + _range_score(variant, needs)
         + _nice_to_have_score(variant, needs)
         + _priority_score(variant, needs, costs)
     )
+    # DC charging score replaces nice-to-have weight when no home charging
+    if needs.home_charging == "no":
+        total += _dc_charging_score(variant, needs)
+        # Cap at nice-to-have equivalent so we don't double-count
+        total = min(125.0, total)
     return min(100, max(0, round(total)))
 
 
@@ -248,17 +299,20 @@ def rank_variants(
             relative_label="",  # assigned after sorting
         ))
 
-    # Sort: score desc → confidence desc → DC boost if no home charging → price asc
+    # Sort: score desc → slow-DC penalty when no home charging → confidence → price asc
     conf_order = {"High": 0, "Medium": 1, "Low": 2}
 
     def sort_key(rv: RankedVariant):
-        dc_boost = 0.0
+        # Slow-DC variants get demoted when no home charging
+        slow_dc_penalty = 0
         if needs.home_charging == "no":
-            dc_boost = -_dc_charging_tiebreak(rv.variant)
+            dc = rv.variant.dc_avg_kw_est or 0
+            if dc < SLOW_DC_THRESHOLD_KW:
+                slow_dc_penalty = 1  # pushed after all non-slow variants
         return (
+            slow_dc_penalty,
             -rv.fit_score,
             conf_order.get(rv.confidence, 2),
-            dc_boost,
             rv.variant.price_inr or 9_999_999,
         )
 

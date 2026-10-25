@@ -60,6 +60,13 @@ requirement. (In this release every variant has a seat count, but the rule must 
   "assumed, not confirmed (see charger_basis)". Do not leave the 5-year cost blank.
 - BaaS rows are excluded unless `pricing_pref` is `baas` or `either`. Never compute a 5-year cost for a BaaS row.
 - Default tariffs: home ₹8/kWh, public DC ₹22/kWh, 10% DC share (blended ₹9.4/kWh), as in the Assumptions tab.
+- Wall charger by `home_charging`:
+  - `yes`: include `charger_cost_inr` (when not in the price) in the budget check and the 5-year cost.
+  - `no`: the buyer cannot install a wall charger, so add **no** charger cost to the budget or the 5-year cost.
+    Running cost uses a 90% public DC share (blended ₹20.6/kWh).
+  - `unsure`: include the charger cost as for `yes`, and label it "assumed home charger".
+- Electricity and 5-year cost are estimates: round them to the nearest ₹1,000 and show them with "~".
+  Official prices are always shown exact.
 
 ## 7. Fit presentation
 
@@ -94,3 +101,7 @@ Also keep the plan's determinism, LLM-failure and adversarial-input tests.
 
 - Verify each CSV's SHA-256 against `manifest.json`; refuse to start on mismatch.
 - Log `release`, row counts and engine version on every result.
+
+## Later
+
+- Store watch-outs as codes in the data release instead of sentences, so the engine can filter them by context.

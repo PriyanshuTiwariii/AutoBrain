@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.costs import BLENDED_TARIFF, compute_costs
+from app.costs import BLENDED_TARIFF_HOME, compute_costs
 from app.dataset import Dataset
 from app.eligibility import check_all
 from app.models import Needs

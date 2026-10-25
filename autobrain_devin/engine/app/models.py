@@ -26,6 +26,7 @@ class FeatureEnum(str, Enum):
 
 
 class PriorityEnum(str, Enum):
+    balanced = "balanced"
     safety = "safety"
     cost = "cost"
     range = "range"
@@ -67,7 +68,7 @@ class Needs(BaseModel):
     body_types: list[BodyTypeEnum] = Field(default_factory=list)
     must_haves: list[FeatureEnum] = Field(default_factory=list)
     nice_to_haves: list[FeatureEnum] = Field(default_factory=list)
-    priority: PriorityEnum = PriorityEnum.cost
+    priority: PriorityEnum = PriorityEnum.balanced
     pricing_pref: PricingPrefEnum = PricingPrefEnum.buy
     exclude_models: list[str] = Field(default_factory=list)
 
@@ -175,12 +176,12 @@ class ReasonCode(BaseModel):
 
 class Slot(BaseModel):
     slot: Literal[
-        "best_match", "strong_alternative", "in_between",
+        "best_match", "strong_alternative", "same_model", "in_between",
         "dont_overpay", "not_recommended",
     ]
     variant_key: str
     match_score: int = Field(ge=0, le=100)
-    confidence: Literal["High", "Medium", "Low"]
+    confidence: Literal["High", "Medium", "Low", ""]
     price_inr: int
     price_status: Literal["verified", "corroborated", "pending"]
     metrics: dict[str, Any] = Field(default_factory=dict)

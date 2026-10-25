@@ -15,7 +15,8 @@ Trust is the product. Every rule below protects it.
 - Every number shown to a buyer comes from the engine's Result JSON. Any number in LLM text that is not in the Result is discarded and replaced by the template sentence.
 - Blank or "Not stated" = unknown. Never treat unknown as yes or no, never fill it in, always show it as "Not stated by maker".
 - Always show `price_status`, `efficiency_basis` and `ncap_status` labels next to the values they qualify.
-- Always show `watch_outs` with any recommended variant.
+- Always show `watch_outs` with any recommended variant, except one that doesn't apply to the buyer's situation.
+  Currently the only such case is the wall-charger watch-out when `home_charging` is "no".
 - Never apply a petrol/diesel crash rating to an EV.
 - Exclude BaaS rows unless the buyer asks for battery financing. Never compare a BaaS price with a battery-included price as if they were the same thing.
 - Accessories may fill a feature gap only if `usable_as_gap_filler = yes`, and never as equal to the higher variant. Never suggest aftermarket parts.

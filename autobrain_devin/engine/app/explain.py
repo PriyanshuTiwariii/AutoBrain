@@ -2,6 +2,18 @@
 from __future__ import annotations
 
 
+def fmt_lakh(v: int | None) -> str:
+    """Format rupees for buyers: ₹6.99 lakh, ₹2 lakh, or ₹60,000 below one lakh."""
+    if v is None:
+        return "price not confirmed"
+    if abs(v) < 100_000:
+        return f"₹{v:,}"
+    lakh = v / 100_000
+    if lakh == int(lakh):
+        return f"₹{int(lakh)} lakh"
+    return f"₹{lakh:.2f} lakh"
+
+
 # ---------------------------------------------------------------------------
 # Reason codes (why a slot was picked)
 # ---------------------------------------------------------------------------
@@ -28,6 +40,7 @@ TRADEOFF_TEMPLATES: dict[str, str] = {
     "esp_not_listed": "ESP not listed by maker.",
     "slow_dc": "Slow DC fast-charging.",
     "charger_not_included": "Wall charger not in price (~₹{cost:,}).",
+    "nice_to_have_unmet": "None of the options in your budget is confirmed to have {feature}.",
     "price_corroborated": "Price corroborated, confirm before buying.",
     "price_pending": "Price not yet confirmed.",
     "baas_warning": "BaaS: battery paid via separate loan.",

@@ -48,6 +48,7 @@
             "enum": [
               "best_match",
               "strong_alternative",
+              "same_model",
               "in_between",
               "dont_overpay",
               "not_recommended"
@@ -62,10 +63,12 @@
             "maximum": 100
           },
           "confidence": {
+            "description": "Evidence confidence. Empty string for not_recommended slots (excluded cars get no confidence).",
             "enum": [
               "High",
               "Medium",
-              "Low"
+              "Low",
+              ""
             ]
           },
           "price_inr": {

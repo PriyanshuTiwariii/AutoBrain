@@ -6,6 +6,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from .costs import budget_cost
+from .explain import fmt_lakh
 from .models import FeatureEnum, Needs, Variant
 
 
@@ -145,19 +147,6 @@ _FEATURE_LABELS: dict[FeatureEnum, str] = {
 
 
 # ---------------------------------------------------------------------------
-# Budget helper
-# ---------------------------------------------------------------------------
-
-def _budget_cost(v: Variant, includes_charger: bool) -> int | None:
-    """Total cost for budget comparison: price + charger if not included."""
-    if v.price_inr is None:
-        return None
-    if includes_charger and not v.charger_included.startswith("Yes"):
-        return v.price_inr + (v.charger_cost_inr or 0)
-    return v.price_inr
-
-
-# ---------------------------------------------------------------------------
 # Main eligibility check
 # ---------------------------------------------------------------------------
 
@@ -195,7 +184,7 @@ def check_eligibility(variant: Variant, needs: Needs) -> EligibilityResult:
             )
 
     # --- Budget ---
-    total_cost = _budget_cost(variant, needs.budget_includes_charger)
+    total_cost = budget_cost(variant, needs)
     if total_cost is None:
         checks["budget"] = Check.UNKNOWN
         unknown_flags.append("Price not confirmed — verify before buying")
@@ -203,8 +192,9 @@ def check_eligibility(variant: Variant, needs: Needs) -> EligibilityResult:
         checks["budget"] = Check.PASS
     else:
         checks["budget"] = Check.FAIL
+        with_charger = " incl. charger" if total_cost != variant.price_inr else ""
         fail_reasons.append(
-            f"Over budget: ₹{total_cost:,} > ₹{needs.budget_max_inr:,}"
+            f"Over budget: {fmt_lakh(total_cost)}{with_charger} vs your {fmt_lakh(needs.budget_max_inr)} budget"
         )
 
     # --- Seats ---

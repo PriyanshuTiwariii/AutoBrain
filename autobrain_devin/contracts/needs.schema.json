@@ -100,13 +100,14 @@
     },
     "priority": {
       "enum": [
+        "balanced",
         "safety",
         "cost",
         "range",
         "features",
         "space"
       ],
-      "default": "cost"
+      "default": "balanced"
     },
     "pricing_pref": {
       "enum": [

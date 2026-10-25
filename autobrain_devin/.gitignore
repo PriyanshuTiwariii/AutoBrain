@@ -8,3 +8,4 @@ node_modules/
 out/
 .DS_Store
 ~$*.xlsx
+scenario_output.txt

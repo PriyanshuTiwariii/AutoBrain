@@ -19,7 +19,7 @@ def _eligible_keys(dataset: Dataset, needs: Needs) -> set[str]:
 
 def _ranked_results(dataset: Dataset, needs: Needs):
     """Return (ranked list, full result)."""
-    result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version)
+    result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
     eligibility = check_all(dataset.variants, needs)
     ranked = rank_variants(dataset.variants, eligibility, needs)
     return ranked, result
@@ -89,6 +89,15 @@ def test_golden_2_no_adaptive_in_budget(dataset: Dataset):
         )
 
 
+def test_golden_2_says_suspension_evidence_limited(dataset: Dataset):
+    needs = Needs(
+        budget_max_inr=2000000, seats_min=4, daily_km=40, home_charging="yes",
+        nice_to_haves=["adaptive_suspension"],
+    )
+    _, result = _ranked_results(dataset, needs)
+    assert "Adaptive suspension evidence is limited." in result.unknowns
+
+
 def test_golden_2_ground_clearance_not_stated(dataset: Dataset):
     """Tiago.ev and Tigor.ev variants show ground_clearance as Not stated."""
     needs = Needs(
@@ -153,17 +162,19 @@ def test_golden_4_eligible_set(dataset: Dataset):
 
 
 def test_golden_4_xuv3xo_in_why_not(dataset: Dataset):
-    """XUV3XOEV-AX7L-394 has ADAS but is not crash-tested → appears in why-not."""
+    """XUV3XOEV-AX7L-394 has ADAS but is not crash-tested → appears in why-not (CHANGES.md §9)."""
     needs = Needs(
         budget_max_inr=1800000, seats_min=5, daily_km=40, home_charging="yes",
         must_haves=["adas", "crash_tested"],
     )
     _, result = _ranked_results(dataset, needs)
-    not_rec_keys = [s.variant_key for s in result.slots if s.slot == "not_recommended"]
-    # The XUV 3XO EV AX7L should appear — it has ADAS but ncap_status != "Rated, applies"
-    assert "MAHINDRA-XUV3XOEV-AX7L-394" in not_rec_keys, (
-        f"Expected XUV3XOEV-AX7L-394 in why-not, got {not_rec_keys}"
+    not_rec = {s.variant_key: s for s in result.slots if s.slot == "not_recommended"}
+    assert "MAHINDRA-XUV3XOEV-AX7L-394" in not_rec, (
+        f"Expected XUV3XOEV-AX7L-394 in why-not, got {list(not_rec)}"
     )
+    reasons = [r.detail for r in not_rec["MAHINDRA-XUV3XOEV-AX7L-394"].reasons]
+    assert reasons == ["Crash test rating: not available"]
+    assert not_rec["MAHINDRA-XUV3XOEV-AX7L-394"].confidence == ""
 
 
 # ---------------------------------------------------------------------------
@@ -223,6 +234,46 @@ def test_golden_5_ranking_favors_dc(dataset: Dataset):
     # Top-ranked variant should have reasonable DC charging
     top = ranked[0].variant
     assert top.dc_avg_kw_est is not None, "Top variant should have dc_avg_kw_est"
+
+
+def test_golden_5_best_match_not_slow_dc(dataset: Dataset):
+    """Best match for scenario 5 (no home charging) must not be a slow-DC variant."""
+    from app.scoring import SLOW_DC_THRESHOLD_KW
+    needs = Needs(
+        budget_max_inr=1500000, seats_min=4, daily_km=40, home_charging="no",
+    )
+    _, result = _ranked_results(dataset, needs)
+    best = [s for s in result.slots if s.slot == "best_match"]
+    assert len(best) == 1
+    best_key = best[0].variant_key
+    v = dataset.get_variant(best_key)
+    assert v is not None
+    assert v.dc_avg_kw_est is not None, f"Best match {best_key} has no DC data"
+    assert v.dc_avg_kw_est >= SLOW_DC_THRESHOLD_KW, (
+        f"Best match {best_key} has slow DC ({v.dc_avg_kw_est} kW < {SLOW_DC_THRESHOLD_KW} kW)"
+    )
+
+
+def test_golden_5_no_slow_dc_recommended_to_save_money(dataset: Dataset):
+    """Without home charging, the 'don't overpay' pick must not be a slow-DC variant."""
+    from app.scoring import SLOW_DC_THRESHOLD_KW
+    needs = Needs(budget_max_inr=1500000, seats_min=4, daily_km=40, home_charging="no")
+    _, result = _ranked_results(dataset, needs)
+    for s in result.slots:
+        if s.slot == "dont_overpay":
+            assert dataset.get_variant(s.variant_key).dc_avg_kw_est >= SLOW_DC_THRESHOLD_KW
+
+
+def test_golden_5_running_cost_uses_public_dc_tariff(dataset: Dataset):
+    """No home charging → running cost at the 90% public-DC blend (₹20.6/kWh), not the ₹9.4 default."""
+    from app.costs import BLENDED_TARIFF_NO_HOME
+    needs = Needs(budget_max_inr=1500000, seats_min=4, daily_km=40, home_charging="no")
+    _, result = _ranked_results(dataset, needs)
+    best = [s for s in result.slots if s.slot == "best_match"][0]
+    v = dataset.get_variant(best.variant_key)
+    expected = round(BLENDED_TARIFF_NO_HOME / v.efficiency_km_per_kwh, 2)
+    assert best.metrics["running_cost_inr_per_km"] == expected
+    assert best.metrics["running_cost_inr_per_km"] > v.running_cost_inr_per_km_default
 
 
 # ---------------------------------------------------------------------------
