@@ -271,8 +271,9 @@ def test_placeholder_secret_starts_but_warns_loudly(release_dir: Path, caplog):
     assert any("ENGINE_SECRET is still the placeholder" in r.getMessage() and r.levelno == logging.WARNING for r in caplog.records)
 
 
-def test_real_secret_does_not_warn(client: TestClient, release_dir: Path, caplog):
-    app = create_app(secret=SECRET, release_dir=release_dir, dev_cors=False)
+def test_real_secret_does_not_warn(client: TestClient, release_dir: Path, caplog, monkeypatch):
+    monkeypatch.setattr(config, "ENV_OVERRIDES_FILE", [])  # what is in this machine's environment is not under test
+    app = create_app(secret=SECRET, release_dir=release_dir, dev_cors=False, llm_client=None)
     with caplog.at_level(logging.WARNING, logger="autobrain.main"):
         with TestClient(app):
             pass

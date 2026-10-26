@@ -106,6 +106,33 @@ export interface Result {
   no_match?: NoMatch | null;
 }
 
+export type ExtractStatus = "read" | "partial" | "off_topic" | "unavailable";
+export type RequiredField = "budget_max_inr" | "seats_min" | "daily_km" | "home_charging";
+
+/** What the engine's /extract returns (contracts/extract.response.schema.json). */
+export interface ExtractResponse {
+  status: ExtractStatus;
+  complete: boolean;
+  /** Only fields that were read and validated by the engine. */
+  needs: Partial<{
+    budget_max_inr: number;
+    seats_min: number;
+    daily_km: number;
+    longest_regular_trip_km: number;
+    home_charging: HomeCharging;
+    must_haves: Feature[];
+    nice_to_haves: Feature[];
+    priority: Priority;
+    pricing_pref: string;
+    body_types: string[];
+    exclude_models: string[];
+  }>;
+  missing: RequiredField[];
+  question: string | null;
+  source: "primary" | "fallback" | null;
+  message: string | null;
+}
+
 /** A problem with one field, as the engine and the website's server route report it. */
 export interface FieldProblem {
   field: string;

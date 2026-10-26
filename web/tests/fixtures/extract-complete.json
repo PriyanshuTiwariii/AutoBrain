@@ -1,0 +1,28 @@
+{
+  "status": "read",
+  "complete": true,
+  "needs": {
+    "budget_max_inr": 1250000,
+    "seats_min": 5,
+    "daily_km": 50,
+    "home_charging": "no",
+    "priority": "safety",
+    "must_haves": [
+      "adas",
+      "camera_360"
+    ],
+    "nice_to_haves": [
+      "sunroof"
+    ],
+    "body_types": [
+      "SUV"
+    ],
+    "exclude_models": [
+      "Nexon.ev"
+    ]
+  },
+  "missing": [],
+  "question": null,
+  "source": "primary",
+  "message": null
+}

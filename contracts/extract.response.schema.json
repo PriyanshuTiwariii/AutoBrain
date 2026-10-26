@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExtractResponse",
+  "description": "POST /extract: the Needs fields read from the buyer's text. Only validated fields are returned; the form shows them for the buyer to check and change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "complete",
+    "needs",
+    "missing",
+    "question",
+    "source",
+    "message"
+  ],
+  "properties": {
+    "status": {
+      "description": "read: the answer was used. partial: both attempts had invalid fields; only the valid ones are returned. off_topic: the message is not about choosing an EV. unavailable: no answer could be obtained.",
+      "enum": [
+        "read",
+        "partial",
+        "off_topic",
+        "unavailable"
+      ]
+    },
+    "complete": {
+      "type": "boolean",
+      "description": "True when `needs` is a full, valid Needs object (all required fields present)."
+    },
+    "needs": {
+      "description": "The fields that were read and validated against needs.schema.json (a copy of its properties, none required).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "budget_max_inr": {
+          "type": "integer",
+          "minimum": 300000
+        },
+        "budget_includes_charger": {
+          "type": "boolean",
+          "default": true
+        },
+        "seats_min": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 7
+        },
+        "daily_km": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "longest_regular_trip_km": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "home_charging": {
+          "enum": [
+            "yes",
+            "no",
+            "unsure"
+          ]
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "body_types": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "Hatchback",
+              "Sedan",
+              "SUV",
+              "SUV coupé"
+            ]
+          },
+          "default": []
+        },
+        "must_haves": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "adas",
+              "camera_360",
+              "sunroof",
+              "ventilated_seats",
+              "esp",
+              "awd",
+              "seven_seats",
+              "lifetime_battery_warranty",
+              "crash_tested",
+              "charger_included",
+              "adaptive_suspension"
+            ]
+          },
+          "default": []
+        },
+        "nice_to_haves": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "adas",
+              "camera_360",
+              "sunroof",
+              "ventilated_seats",
+              "esp",
+              "awd",
+              "seven_seats",
+              "lifetime_battery_warranty",
+              "crash_tested",
+              "charger_included",
+              "adaptive_suspension"
+            ]
+          },
+          "default": []
+        },
+        "priority": {
+          "enum": [
+            "balanced",
+            "safety",
+            "cost",
+            "range",
+            "features",
+            "space"
+          ],
+          "default": "balanced"
+        },
+        "pricing_pref": {
+          "enum": [
+            "buy",
+            "baas",
+            "either"
+          ],
+          "default": "buy"
+        },
+        "exclude_models": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "missing": {
+      "description": "Required Needs fields that were not read.",
+      "type": "array",
+      "items": {
+        "enum": [
+          "budget_max_inr",
+          "seats_min",
+          "daily_km",
+          "home_charging"
+        ]
+      }
+    },
+    "question": {
+      "description": "At most one clarifying question, only about a missing budget, seats, daily km or home charging.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "description": "Which model answered.",
+      "enum": [
+        "primary",
+        "fallback",
+        null
+      ]
+    },
+    "message": {
+      "description": "A short plain-language note for the buyer, if there is one.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

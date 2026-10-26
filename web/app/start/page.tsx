@@ -1,8 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import DescribeBox from "@/components/DescribeBox";
 import Header from "@/components/Header";
+import { applyExtraction } from "@/lib/extract";
 import {
   EMPTY_FORM,
   FEATURES,
@@ -13,7 +15,7 @@ import {
   type FormState,
 } from "@/lib/needs";
 import { getVisitId, loadForm, saveForm, saveResult } from "@/lib/storage";
-import type { Feature, FieldProblem, Result } from "@/lib/types";
+import type { ExtractResponse, Feature, FieldProblem, Result } from "@/lib/types";
 
 const INPUT =
   "min-h-12 w-full rounded-xl border border-[#A9B6BF] bg-white px-3.5 py-2.5 text-base text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30";
@@ -71,6 +73,9 @@ function FeatureBoxes({
 export default function StartPage() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  // The answer can arrive seconds after the button was pressed: apply it to the form as it is now, not as it was then
+  const latestForm = useRef(form);
+  latestForm.current = form;
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -93,6 +98,16 @@ export default function StartPage() {
     });
   };
 
+  // "Describe what you need" only fills the form in; nothing is submitted until the buyer presses the button
+  const applyDescription = (response: ExtractResponse) => {
+    const applied = applyExtraction(latestForm.current, response);
+    latestForm.current = applied.form;
+    setForm(applied.form);
+    setErrors({});
+    setFormError(null);
+    return applied;
+  };
+
   const showProblems = (problems: FieldProblem[]) => {
     const byField: Record<string, string> = {};
     const general: string[] = [];
@@ -102,7 +117,9 @@ export default function StartPage() {
       else byField[target] = byField[target] ? `${byField[target]} ${p.message}` : p.message;
     }
     setErrors(byField);
-    setFormError(general.length ? general.join(" ") : null);
+    // The field messages can be scrolled out of sight above the button, so say it here too
+    const summary = [...general, ...Object.values(byField)];
+    setFormError(summary.length ? summary.join(" ") : null);
   };
 
   async function onSubmit(event: React.FormEvent) {
@@ -144,6 +161,8 @@ export default function StartPage() {
       <main className="mx-auto max-w-[720px] px-5 pb-20 pt-8 md:px-8 md:pt-12">
         <h1 className="m-0 mb-2 text-[28px] font-extrabold tracking-tight md:text-4xl">What do you need?</h1>
         <p className="m-0 mb-8 text-base text-muted">Answer what you can. We only recommend cars the data can back up.</p>
+
+        <DescribeBox onApply={applyDescription} />
 
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-7">
           <Field label="Budget (₹ lakh)" hint="The most you want to spend, ex-showroom. For example 15 or 12.5." error={errors.budgetLakh}>

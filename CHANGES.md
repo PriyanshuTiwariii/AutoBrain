@@ -137,6 +137,29 @@ and adds a `no_match` object (`contracts/result.schema.json`); `unknowns[0]` is 
 - Provider-specific details in `DESIGN.md` (prompt caching, JSON output mode, token estimates) are to be
   decided again when the LLM steps are built.
 
+## 13. "Describe what you need" (LLM call 1, `POST /extract`)
+
+The buyer may describe their needs in their own words instead of (or before) using the form. Contracts:
+`contracts/extract.request.schema.json` and `contracts/extract.response.schema.json`.
+
+- **It only fills in the form.** The buyer sees and can change every field before pressing the button. The form
+  works exactly as before with no key, or with OpenAI down (`status: "unavailable"`, a normal answer).
+- **The model reads facts, we do the arithmetic.** It reports an amount and its unit ("15" "lakh", "1.5" "crore"),
+  and a distance and its basis ("25 km" "each way"); the engine converts to rupees and to km a day.
+  Understood: 15 lakh, 15L, 1.5 crore, ₹12,50,000, Hinglish, "family of 4", "office 25 km each way" (= 50 km a day).
+- **Everything is validated against `needs.schema.json`.** A field that fails is dropped, never passed on. Features,
+  priorities and car names are limited to the contract's and the data's lists.
+- **Fallback:** if the first model's answer is not usable (invalid fields, refusal, timeout, error), the second
+  model is tried once. If that fails too, the fields that could be read are returned.
+- **At most one clarifying question,** only for a missing budget, seats, daily km or home charging, in that order,
+  from fixed wording in the code.
+- **The buyer's text is data, never instructions:** it goes only in the user message, inside tags, and the model can
+  only answer in a fixed JSON shape.
+- **Privacy:** the text is not logged (the log has the model, effort, outcome and time), not kept in the browser, and
+  not stored on OpenAI's side.
+- **Models are read from `.env`; no model name is in the code.** Reasoning effort is a setting per role (default
+  `none` for the primary, `low` for the fallback, because some models reject `none`).
+
 ## Later
 
 - Store watch-outs as codes in the data release instead of sentences, so the engine can filter them by context.

@@ -19,9 +19,14 @@ def _load(name: str) -> dict[str, Any]:
 
 NEEDS_SCHEMA = _load("needs.schema.json")
 RESULT_SCHEMA = _load("result.schema.json")
+EXTRACT_REQUEST_SCHEMA = _load("extract.request.schema.json")
+EXTRACT_RESPONSE_SCHEMA = _load("extract.response.schema.json")
 
 _needs_validator = Draft202012Validator(NEEDS_SCHEMA)
 _result_validator = Draft202012Validator(RESULT_SCHEMA)
+_extract_request_validator = Draft202012Validator(EXTRACT_REQUEST_SCHEMA)
+_extract_response_validator = Draft202012Validator(EXTRACT_RESPONSE_SCHEMA)
+_needs_field_validators = {name: Draft202012Validator(spec) for name, spec in NEEDS_SCHEMA["properties"].items()}
 
 _TYPE_WORDS = {
     "integer": "a whole number",
@@ -85,7 +90,39 @@ def _describe(error: ValidationError) -> list[dict[str, str]]:
     if kind == "enum":
         options = ", ".join(str(v) for v in error.validator_value)
         return [{"field": field, "message": f"{field} must be one of: {options}"}]
+    if kind == "minLength":
+        return [{"field": field, "message": f"{field} must not be empty"}]
+    if kind == "maxLength":
+        return [{"field": field, "message": f"{field} must be at most {error.validator_value} characters"}]
     return [{"field": field, "message": f"{field} is not valid ({error.message})"}]
+
+
+def _plain_errors(validator: Draft202012Validator, body: Any) -> list[dict[str, str]]:
+    found: list[dict[str, str]] = []
+    for error in sorted(validator.iter_errors(body), key=lambda e: (list(map(str, e.absolute_path)), e.message)):
+        for entry in _describe(error):
+            if entry not in found:
+                found.append(entry)
+    return found
+
+
+def needs_field_is_valid(name: str, value: Any) -> bool:
+    """Is this one value acceptable for this one Needs field, per needs.schema.json?"""
+    validator = _needs_field_validators.get(name)
+    return validator is not None and validator.is_valid(value)
+
+
+def extract_request_errors(body: Any) -> list[dict[str, str]]:
+    """Plain-English problems with a /extract request body. Empty = valid."""
+    return _plain_errors(_extract_request_validator, body)
+
+
+def extract_response_errors(payload: Any) -> list[str]:
+    """Every problem with a /extract response against its contract, with its path, for the log."""
+    return [
+        f"{'/'.join(str(p) for p in e.absolute_path) or '(root)'}: {e.message}"
+        for e in sorted(_extract_response_validator.iter_errors(payload), key=lambda e: list(map(str, e.absolute_path)))
+    ]
 
 
 def needs_errors(body: Any) -> list[dict[str, str]]:

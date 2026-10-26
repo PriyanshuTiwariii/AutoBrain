@@ -1,0 +1,14 @@
+{
+  "status": "off_topic",
+  "complete": false,
+  "needs": {},
+  "missing": [
+    "budget_max_inr",
+    "seats_min",
+    "daily_km",
+    "home_charging"
+  ],
+  "question": null,
+  "source": "primary",
+  "message": "I can only help you choose an electric car. Tell me about the car you want, or fill in the form below."
+}

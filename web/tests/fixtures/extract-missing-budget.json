@@ -1,0 +1,15 @@
+{
+  "status": "read",
+  "complete": false,
+  "needs": {
+    "seats_min": 4,
+    "home_charging": "yes"
+  },
+  "missing": [
+    "budget_max_inr",
+    "daily_km"
+  ],
+  "question": "What is your budget? For example, 15 lakh.",
+  "source": "primary",
+  "message": null
+}
