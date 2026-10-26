@@ -1,4 +1,4 @@
-import type { FieldProblem, Feature, HomeCharging, NeedsInput, Priority } from "./types";
+import type { FieldProblem, Feature, HomeCharging, NeedsInput, Priority, RoadConditions } from "./types";
 
 /** Limits from ../contracts/needs.schema.json (a test keeps these in step with the contract). */
 export const LIMITS = {
@@ -39,6 +39,12 @@ export const HOME_CHARGING_OPTIONS: { value: HomeCharging; label: string; hint: 
   { value: "unsure", label: "Not sure", hint: "I'll find out" },
 ];
 
+export const ROAD_CONDITIONS: { value: RoadConditions; label: string; hint: string }[] = [
+  { value: "city_highway", label: "City and highway", hint: "Normal paved roads" },
+  { value: "rough_roads", label: "Rough roads", hint: "Potholes, speed breakers, broken roads" },
+  { value: "light_offroad", label: "Light off-road", hint: "Gravel, dirt tracks (not serious off-roading)" },
+];
+
 /** Everything the form holds, as the strings the inputs hold. */
 export interface FormState {
   budgetLakh: string;
@@ -49,6 +55,7 @@ export interface FormState {
   mustHaves: Feature[];
   niceToHaves: Feature[];
   priority: Priority;
+  roadConditions: RoadConditions;
 }
 
 export const EMPTY_FORM: FormState = {
@@ -60,6 +67,7 @@ export const EMPTY_FORM: FormState = {
   mustHaves: [],
   niceToHaves: [],
   priority: "balanced",
+  roadConditions: "city_highway",
 };
 
 /** The form field each engine field belongs to (so an engine message lands under the right input). */
@@ -72,6 +80,7 @@ const ENGINE_FIELD_TO_FORM: Record<string, string> = {
   must_haves: "mustHaves",
   nice_to_haves: "niceToHaves",
   priority: "priority",
+  road_conditions: "roadConditions",
 };
 
 export function formFieldFor(field: string): string {
@@ -136,6 +145,7 @@ export function buildNeeds(form: FormState): { needs?: NeedsInput; problems: Fie
     must_haves: form.mustHaves,
     nice_to_haves: form.niceToHaves.filter((f) => !form.mustHaves.includes(f)),
     priority: form.priority,
+    road_conditions: form.roadConditions,
   };
   if (tripKm !== null) needs.longest_regular_trip_km = tripKm;
   return { needs, problems };

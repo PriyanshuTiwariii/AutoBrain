@@ -64,6 +64,12 @@ export function tilesFor(m: Metrics, featured: boolean): Tile[] {
       label: "Ground clearance",
       value: m.ground_clearance_mm != null ? `${m.ground_clearance_mm} mm` : NOT_STATED,
     });
+    if ("battery_clearance_mm" in m) {
+      tiles.push({
+        label: "Under-battery clearance",
+        value: m.battery_clearance_mm != null ? `${m.battery_clearance_mm} mm` : NOT_STATED,
+      });
+    }
   }
   return tiles;
 }

@@ -36,7 +36,7 @@ def answer(**fields: Any) -> dict[str, Any]:
     base: dict[str, Any] = {
         "is_about_buying_an_ev": True, "budget": None, "seats_min": None, "daily_distance": None,
         "longest_regular_trip_km": None, "home_charging": None, "must_haves": [], "nice_to_haves": [],
-        "priority": None, "pricing_pref": None, "body_types": [], "exclude_models": [],
+        "priority": None, "pricing_pref": None, "road_conditions": None, "body_types": [], "exclude_models": [],
     }
     base.update(fields)
     return base
@@ -400,6 +400,7 @@ def test_enums_in_the_model_schema_come_from_the_contract_and_the_data():
     assert schema["home_charging"]["enum"] == [*contract["home_charging"]["enum"], None]
     assert schema["priority"]["enum"] == [*contract["priority"]["enum"], None]
     assert schema["pricing_pref"]["enum"] == [*contract["pricing_pref"]["enum"], None]
+    assert schema["road_conditions"]["enum"] == [*contract["road_conditions"]["enum"], None]
     assert schema["exclude_models"]["items"]["enum"] == ["Alpha.ev", "Zed.ev"]
 
 
@@ -665,3 +666,12 @@ def test_the_override_list_holds_names_only():
     from app import config
 
     assert all(isinstance(n, str) and n.isupper() and "=" not in n and not n.startswith("sk-") for n in config.ENV_OVERRIDES_FILE)
+
+
+def test_road_conditions_are_read_when_valid_and_dropped_when_not():
+    from app.extract import read_answer
+    ok = read_answer(answer(road_conditions="light_offroad"), {})
+    assert ok.fields == {"road_conditions": "light_offroad"} and ok.rejected == []
+    bad = read_answer(answer(road_conditions="mountain_goat"), {})
+    assert "road_conditions" not in bad.fields and bad.rejected == ["road_conditions"]
+    assert "road_conditions" not in read_answer(answer(), {}).fields

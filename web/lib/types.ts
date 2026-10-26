@@ -18,6 +18,7 @@ export type Feature =
 
 export type Priority = "balanced" | "safety" | "cost" | "range" | "features" | "space";
 export type HomeCharging = "yes" | "no" | "unsure";
+export type RoadConditions = "city_highway" | "rough_roads" | "light_offroad";
 
 /** What the website sends: the required fields plus the ones the form collects. */
 export interface NeedsInput {
@@ -29,6 +30,7 @@ export interface NeedsInput {
   must_haves: Feature[];
   nice_to_haves: Feature[];
   priority: Priority;
+  road_conditions: RoadConditions;
 }
 
 export type SlotKind =
@@ -70,6 +72,7 @@ export interface Metrics {
   seats?: number | null;
   boot_l?: number | null;
   ground_clearance_mm?: number | null;
+  battery_clearance_mm?: number | null;
   relative_label?: string | null;
   [key: string]: string | number | null | undefined;
 }
@@ -123,6 +126,7 @@ export interface ExtractResponse {
     must_haves: Feature[];
     nice_to_haves: Feature[];
     priority: Priority;
+    road_conditions: RoadConditions;
     pricing_pref: string;
     body_types: string[];
     exclude_models: string[];

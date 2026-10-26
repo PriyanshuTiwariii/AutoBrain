@@ -131,6 +131,14 @@
           ],
           "default": "balanced"
         },
+        "road_conditions": {
+          "enum": [
+            "city_highway",
+            "rough_roads",
+            "light_offroad"
+          ],
+          "default": "city_highway"
+        },
         "pricing_pref": {
           "enum": [
             "buy",

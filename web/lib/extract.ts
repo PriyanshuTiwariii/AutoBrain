@@ -1,5 +1,5 @@
 import { FEATURES, LIMITS, type FormState } from "./needs";
-import type { ExtractResponse, ExtractStatus, Feature, HomeCharging, Priority, RequiredField } from "./types";
+import type { ExtractResponse, ExtractStatus, Feature, HomeCharging, Priority, RequiredField, RoadConditions } from "./types";
 
 export const EXTRACT_STATUSES: ExtractStatus[] = ["read", "partial", "off_topic", "unavailable"];
 export const REQUIRED_FIELDS: RequiredField[] = ["budget_max_inr", "seats_min", "daily_km", "home_charging"];
@@ -18,6 +18,7 @@ export const UNAVAILABLE: ExtractResponse = {
 };
 
 const HOME_CHARGING: HomeCharging[] = ["yes", "no", "unsure"];
+const ROAD_CONDITIONS: RoadConditions[] = ["city_highway", "rough_roads", "light_offroad"];
 const PRIORITIES: Priority[] = ["balanced", "safety", "cost", "range", "features", "space"];
 
 export function isExtractResponse(value: unknown): value is ExtractResponse {
@@ -44,6 +45,7 @@ const FIELD_LABEL = {
   mustHaves: "must-haves",
   niceToHaves: "nice-to-haves",
   priority: "priority",
+  roadConditions: "road conditions",
 } as const;
 
 /** Fields the engine can read that the form has no input for (yet). They are not applied. */
@@ -114,6 +116,10 @@ export function applyExtraction(form: FormState, response: ExtractResponse): App
   if (n.priority && PRIORITIES.includes(n.priority)) {
     next.priority = n.priority;
     filled.push(FIELD_LABEL.priority);
+  }
+  if (n.road_conditions && ROAD_CONDITIONS.includes(n.road_conditions)) {
+    next.roadConditions = n.road_conditions;
+    filled.push(FIELD_LABEL.roadConditions);
   }
 
   const ignored = Object.entries(NOT_IN_FORM)

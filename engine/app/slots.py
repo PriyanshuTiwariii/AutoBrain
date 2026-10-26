@@ -10,6 +10,7 @@ from .eligibility import (
 )
 from .costs import budget_cost
 from .explain import fmt_lakh, fmt_ncap, render_tradeoff
+from .terrain import NOT_OFFROAD_NOTE, terrain_reasons, terrain_tradeoffs
 from .models import FeatureEnum, Needs, Result, ReasonCode, Slot, Variant
 from .nomatch import explain_no_match
 from .scoring import SLOW_DC_THRESHOLD_KW, RankedVariant, _assign_label, rank_variants
@@ -186,6 +187,7 @@ def _build_metrics(rv: RankedVariant) -> dict[str, Any]:
         "seats": v.seats,
         "boot_l": v.boot_l,
         "ground_clearance_mm": v.ground_clearance_mm,
+        "battery_clearance_mm": v.battery_clearance_mm,
         "airbags": v.airbags,
         "adaptive_suspension": v.adaptive_suspension,
         "relative_label": rv.relative_label,
@@ -237,6 +239,8 @@ def _specific_reasons(rv: RankedVariant, needs: Needs, ranked: list[RankedVarian
     # Battery warranty lifetime?
     if v.battery_warranty == "Lifetime (1st owner)":
         reasons.append({"code": "lifetime_warranty", "detail": "Lifetime battery warranty (first owner)."})
+
+    reasons.extend(terrain_reasons(v, needs.road_conditions.value))
 
     # If nothing specific, add a generic fallback
     if not reasons:
@@ -478,6 +482,10 @@ def _buyer_relevant_tradeoffs(v: Variant, needs: Needs, watch_outs: list[str]) -
         and v.charger_cost_inr
     ):
         _add("charger_extra", f"Wall charger not in price (~{fmt_lakh(v.charger_cost_inr)}).", "charger")
+
+    # Rough roads / light off-road (only when the buyer said so)
+    for t in terrain_tradeoffs(v, needs.road_conditions.value):
+        _add(t["code"], t["detail"], "clearance")
 
     # Price status
     if v.price_status == "corroborated":
@@ -867,6 +875,7 @@ def assign_slots(
 # Buyer-facing wording for the Needs chips (the raw enum values are for code, not for people)
 _HOME_CHARGING_TEXT = {"yes": "yes", "no": "no", "unsure": "not sure"}
 _PRIORITY_TEXT = {"cost": "lowest cost"}
+_ROAD_TEXT = {"rough_roads": "rough roads", "light_offroad": "light off-road"}
 _PRICING_TEXT = {
     "baas": "battery financing (BaaS)",
     "either": "battery included or battery financing (BaaS)",
@@ -893,6 +902,8 @@ def _needs_summary(needs: Needs) -> list[str]:
     if needs.nice_to_haves:
         lines.append(f"Nice-to-haves: {_feature_names(needs.nice_to_haves)}")
     lines.append(f"Priority: {_PRIORITY_TEXT.get(needs.priority.value, needs.priority.value)}")
+    if needs.road_conditions.value != "city_highway":
+        lines.append(f"Roads: {_ROAD_TEXT[needs.road_conditions.value]}")
     if needs.pricing_pref != "buy":
         lines.append(f"Pricing: {_PRICING_TEXT.get(needs.pricing_pref.value, needs.pricing_pref.value)}")
     return lines
@@ -938,6 +949,9 @@ def build_result(
             unknowns.append(render_tradeoff("nice_to_have_unmet", feature=label.lower()))
             if feature.value == "adaptive_suspension":
                 unknowns.append(render_tradeoff("suspension_unknown"))
+
+    if needs.road_conditions.value == "light_offroad":
+        unknowns.append(NOT_OFFROAD_NOTE)
 
     no_match = None
     if not ranked:

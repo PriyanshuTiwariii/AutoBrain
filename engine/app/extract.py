@@ -42,6 +42,7 @@ FIELD_NAMES = {
     "nice_to_haves": "nice-to-haves",
     "priority": "priority",
     "pricing_pref": "pricing",
+    "road_conditions": "road conditions",
     "body_types": "body types",
     "exclude_models": "excluded models",
 }
@@ -86,8 +87,8 @@ def extraction_schema(model_names: list[str]) -> dict[str, Any]:
         "additionalProperties": False,
         "required": [
             "is_about_buying_an_ev", "budget", "seats_min", "daily_distance", "longest_regular_trip_km",
-            "home_charging", "must_haves", "nice_to_haves", "priority", "pricing_pref", "body_types",
-            "exclude_models",
+            "home_charging", "must_haves", "nice_to_haves", "priority", "pricing_pref", "road_conditions",
+            "body_types", "exclude_models",
         ],
         "properties": {
             "is_about_buying_an_ev": {"type": "boolean"},
@@ -120,6 +121,7 @@ def extraction_schema(model_names: list[str]) -> dict[str, Any]:
             "nice_to_haves": {"type": "array", "items": {"type": "string", "enum": features}},
             "priority": _nullable_enum(list(PROPS["priority"]["enum"])),
             "pricing_pref": _nullable_enum(list(PROPS["pricing_pref"]["enum"])),
+            "road_conditions": _nullable_enum(list(PROPS["road_conditions"]["enum"])),
             "body_types": {"type": "array", "items": {"type": "string", "enum": list(PROPS["body_types"]["items"]["enum"])}},
             "exclude_models": {"type": "array", "items": {"type": "string", "enum": sorted(model_names)}},
         },
@@ -153,6 +155,7 @@ must_haves: features they say they need ("must", "need", "chahiye", "zaroor", "c
 {glossary}
 priority: the one thing that matters most: safety, cost (cheapest to own), range, features, space; "balanced" if they say they want a bit of everything; otherwise null.
 pricing_pref: "baas" only if they ask about battery rental / battery-as-a-service, "either" if they are open to both; otherwise null.
+road_conditions: "rough_roads" if they mention bad or broken roads, potholes, speed breakers, gravel or village roads; "light_offroad" if they want to go off-road, on dirt tracks, trails or hills; "city_highway" if they say they drive only on normal city or highway roads; otherwise null.
 body_types: only if they name a body style (hatchback, sedan, SUV, SUV coupé).
 exclude_models: models they say they do not want. If they exclude a brand, list all that brand's models. Cars in our data:
 {cars}
@@ -221,7 +224,7 @@ def read_answer(raw: dict[str, Any], models_by_lower: dict[str, str]) -> Reading
         else:
             rejected.append("daily_km")
 
-    for key in ("home_charging", "priority", "pricing_pref"):
+    for key in ("home_charging", "priority", "pricing_pref", "road_conditions"):
         value = raw.get(key)
         if value is not None:
             candidate[key] = value

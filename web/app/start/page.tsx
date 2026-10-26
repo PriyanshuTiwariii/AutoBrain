@@ -10,6 +10,7 @@ import {
   FEATURES,
   HOME_CHARGING_OPTIONS,
   PRIORITIES,
+  ROAD_CONDITIONS,
   buildNeeds,
   formFieldFor,
   type FormState,
@@ -231,6 +232,33 @@ export default function StartPage() {
               ))}
             </div>
             {errors.homeCharging ? <div role="alert" className="text-sm font-semibold text-warn">{errors.homeCharging}</div> : null}
+          </fieldset>
+
+          <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+            <legend className={`${LABEL} mb-1 p-0`}>What roads do you drive on?</legend>
+            <div className={HINT}>We rank cars with higher stated ground clearance (and all-wheel drive for light off-road) higher. We never rule a car out for this.</div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {ROAD_CONDITIONS.map((o) => (
+                <label
+                  key={o.value}
+                  className={`flex min-h-12 cursor-pointer flex-col justify-center rounded-xl border px-3.5 py-2.5 ${
+                    form.roadConditions === o.value ? "border-brand bg-sky" : "border-line bg-white"
+                  }`}
+                >
+                  <span className="flex items-center gap-3 text-[15px] font-semibold">
+                    <input
+                      type="radio"
+                      name="roadConditions"
+                      className="h-5 w-5 accent-brand"
+                      checked={form.roadConditions === o.value}
+                      onChange={() => set("roadConditions", o.value)}
+                    />
+                    {o.label}
+                  </span>
+                  <span className="pl-8 text-[13px] text-muted">{o.hint}</span>
+                </label>
+              ))}
+            </div>
           </fieldset>
 
           <FeatureBoxes

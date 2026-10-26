@@ -25,6 +25,13 @@ describe("applyExtraction, on real engine responses", () => {
     expect(filled).toEqual(["budget", "seats", "daily driving", "home charging", "must-haves", "nice-to-haves", "priority"]);
   });
 
+  it("fills in road conditions when the engine read them", () => {
+    const { form, filled } = applyExtraction(EMPTY_FORM, response({ road_conditions: "light_offroad" }));
+    expect(form.roadConditions).toBe("light_offroad");
+    expect(filled).toEqual(["road conditions"]);
+    expect(applyExtraction(EMPTY_FORM, response({})).form.roadConditions).toBe("city_highway");
+  });
+
   it("the filled form builds a valid Needs, so the buyer can just press the button", () => {
     const { form } = applyExtraction({ ...EMPTY_FORM }, extractFixture("complete"));
     const { needs, problems } = buildNeeds(form);

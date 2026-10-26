@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EMPTY_FORM, FEATURES, HOME_CHARGING_OPTIONS, LIMITS, PRIORITIES, buildNeeds, formFieldFor, type FormState } from "@/lib/needs";
+import { EMPTY_FORM, FEATURES, HOME_CHARGING_OPTIONS, LIMITS, PRIORITIES, ROAD_CONDITIONS, buildNeeds, formFieldFor, type FormState } from "@/lib/needs";
 import { contract } from "./helpers";
 
 const valid: FormState = { ...EMPTY_FORM, budgetLakh: "15", dailyKm: "40", homeCharging: "yes" };
@@ -16,7 +16,12 @@ describe("buildNeeds", () => {
       must_haves: ["adas"],
       nice_to_haves: ["sunroof"],
       priority: "safety",
+      road_conditions: "city_highway",
     });
+  });
+
+  it("sends the chosen road conditions", () => {
+    expect(buildNeeds({ ...valid, roadConditions: "light_offroad" }).needs?.road_conditions).toBe("light_offroad");
   });
 
   it.each([
@@ -98,6 +103,11 @@ describe("the form stays in step with contracts/needs.schema.json", () => {
     expect(FEATURES.map((f) => f.value).sort()).toEqual([...props.nice_to_haves.items.enum].sort());
     expect(PRIORITIES.map((p) => p.value).sort()).toEqual([...props.priority.enum].sort());
     expect(HOME_CHARGING_OPTIONS.map((o) => o.value).sort()).toEqual([...props.home_charging.enum].sort());
+  });
+
+  it("road conditions are exactly the contract's enum, with its default", () => {
+    expect(ROAD_CONDITIONS.map((r) => r.value).sort()).toEqual([...props.road_conditions.enum].sort());
+    expect(EMPTY_FORM.roadConditions).toBe(props.road_conditions.default);
   });
 
   it("the default priority is the contract's default", () => {

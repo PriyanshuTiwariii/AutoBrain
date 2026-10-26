@@ -46,6 +46,12 @@ class HomeChargingEnum(str, Enum):
     unsure = "unsure"
 
 
+class RoadConditionsEnum(str, Enum):
+    city_highway = "city_highway"
+    rough_roads = "rough_roads"
+    light_offroad = "light_offroad"
+
+
 class BodyTypeEnum(str, Enum):
     hatchback = "Hatchback"
     sedan = "Sedan"
@@ -69,6 +75,7 @@ class Needs(BaseModel):
     must_haves: list[FeatureEnum] = Field(default_factory=list)
     nice_to_haves: list[FeatureEnum] = Field(default_factory=list)
     priority: PriorityEnum = PriorityEnum.balanced
+    road_conditions: RoadConditionsEnum = RoadConditionsEnum.city_highway
     pricing_pref: PricingPrefEnum = PricingPrefEnum.buy
     exclude_models: list[str] = Field(default_factory=list)
 

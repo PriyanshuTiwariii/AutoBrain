@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from .costs import CostBreakdown, compute_costs
 from .eligibility import Check, EligibilityResult, FEATURE_CHECKERS, check_eligibility
 from .models import FeatureEnum, Needs, Variant
+from .terrain import terrain_score
 
 
 class RankedVariant(BaseModel):
@@ -210,6 +211,8 @@ def compute_fit_score(
         total += _dc_charging_score(variant, needs)
         # Cap at nice-to-have equivalent so we don't double-count
         total = min(125.0, total)
+    # Rough-road / light off-road fit: credit only for what the maker states
+    total += terrain_score(variant, needs.road_conditions.value)
     return min(100, max(0, round(total)))
 
 

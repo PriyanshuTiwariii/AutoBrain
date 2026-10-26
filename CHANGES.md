@@ -160,6 +160,25 @@ The buyer may describe their needs in their own words instead of (or before) usi
 - **Models are read from `.env`; no model name is in the code.** Reasoning effort is a setting per role (default
   `none` for the primary, `low` for the fallback, because some models reject `none`).
 
+## 14. Rough roads / light off-road (`road_conditions`)
+
+New optional Needs field: `city_highway` (default, changes nothing), `rough_roads`, `light_offroad`. Contract first
+(`needs.schema.json`, `extract.response.schema.json`), then the engine, the types and the form. Pure Python in
+`engine/app/terrain.py`; no LLM in the scoring.
+
+- **It ranks, it never filters.** A car is not ruled out for its clearance or drive. The thresholds are engine
+  guidelines, not maker figures: 200 mm and above is full credit, 180 to 199 mm partial.
+- **Score (0-25, added to the fit score):** `rough_roads` = ground clearance 15 + under-battery clearance 5 +
+  adaptive suspension 5. `light_offroad` = ground clearance 10 + under-battery clearance 5 + AWD 10.
+- **Unknown is never a yes or a no.** A blank clearance, or a drive of Not stated, earns no credit and is shown as
+  "not stated by maker" on the card (trade-offs `ground_clearance_unknown`, `battery_clearance_unknown`,
+  `drive_unknown`). A stated low figure is a different trade-off (`low_ground_clearance`, `low_battery_clearance`, `no_awd`).
+- **Strengths shown as reasons** only when stated: ground clearance of 200 mm or more, AWD (light off-road), adaptive
+  suspension (rough roads).
+- **`light_offroad` adds one line to `unknowns`:** no EV in the data is rated for serious off-roading.
+- `needs_summary` gains "Roads: ..." only when it is not `city_highway`. Cards carry `battery_clearance_mm` in `metrics`.
+- The describe box can fill it in (`/extract` reads `road_conditions`).
+
 ## Later
 
 - Store watch-outs as codes in the data release instead of sentences, so the engine can filter them by context.
