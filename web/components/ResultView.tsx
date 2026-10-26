@@ -25,6 +25,50 @@ function NearMiss({ slot }: { slot: Slot }) {
   );
 }
 
+/** When nothing qualifies: why, the closest option, and what it would take. All text is the engine's. */
+function NoMatchSection({ result }: { result: Result }) {
+  const noMatch = result.no_match;
+  const closest = result.slots.find((s) => s.variant_key === noMatch?.closest_variant_key);
+  return (
+    <section aria-label="Why nothing qualifies" className="flex flex-col gap-5 rounded-[18px] border border-warn-line bg-warn-bg p-5 md:p-6">
+      <p className="m-0 text-base font-bold leading-relaxed text-warn-ink">
+        {result.unknowns[0] ?? "None of the vehicles in our current dataset meet all your requirements."}
+      </p>
+
+      {noMatch && noMatch.reasons.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <h2 className="m-0 text-base font-extrabold text-warn-ink">Why nothing qualifies</h2>
+          <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+            {noMatch.reasons.map((reason) => (
+              <li key={reason} className="text-[15px] leading-relaxed">{reason}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {closest ? (
+        <div className="no-break flex flex-col gap-2 rounded-[14px] bg-white p-4">
+          <h2 className="m-0 text-base font-extrabold">The closest option</h2>
+          <NearMiss slot={closest} />
+        </div>
+      ) : null}
+
+      {noMatch && noMatch.what_it_would_take.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <h2 className="m-0 text-base font-extrabold text-warn-ink">
+            {closest ? "What it would take to get that option" : "What would help"}
+          </h2>
+          <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+            {noMatch.what_it_would_take.map((line) => (
+              <li key={line} className="text-[15px] leading-relaxed">{line}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 /** The whole results page for one Result. Presentational: it only shows what the engine returned. */
 export default function ResultView({ result, visitId }: { result: Result; visitId: string }) {
   const recommended = result.slots.filter((s) => s.slot !== "not_recommended");
@@ -55,16 +99,7 @@ export default function ResultView({ result, visitId }: { result: Result; visitI
         </div>
       </section>
 
-      {!best ? (
-        <section className="rounded-[18px] border border-warn-line bg-warn-bg p-5">
-          <p className="m-0 text-base leading-relaxed text-warn-ink">
-            {result.unknowns[0] ?? "None of the vehicles in our current dataset meet all your requirements."}
-          </p>
-          {nearMisses.length > 0 ? (
-            <p className="mb-0 mt-2 text-base text-warn-ink">The closest options are listed below. Loosening one need may help.</p>
-          ) : null}
-        </section>
-      ) : null}
+      {!best ? <NoMatchSection result={result} /> : null}
 
       {best ? <SlotCard slot={best} featured /> : null}
 
@@ -80,7 +115,7 @@ export default function ResultView({ result, visitId }: { result: Result; visitI
 
       <SideBySide slots={recommended} />
 
-      {nearMisses.length > 0 ? (
+      {best && nearMisses.length > 0 ? (
         <section aria-label="Considered, not recommended" className="no-break flex flex-col gap-4 rounded-[18px] bg-[#E9EDEF] p-5 md:px-6 md:py-[22px]">
           <div className="text-xs font-extrabold uppercase tracking-[0.08em] text-muted">Considered, not recommended for you</div>
           {nearMisses.map((s) => (
@@ -103,12 +138,14 @@ export default function ResultView({ result, visitId }: { result: Result; visitI
       ) : null}
 
       <section aria-label="How to read this" className="grid gap-4 md:grid-cols-3">
-        <div className="no-break flex flex-col gap-1.5 rounded-[14px] border border-line bg-white p-[18px]">
-          <h3 className="m-0 text-[15px] font-extrabold">Fit labels</h3>
-          <p className="m-0 text-sm leading-relaxed text-[#33424D]">
-            &ldquo;Strongest fit&rdquo; and &ldquo;Close second&rdquo; compare these cars for you. They compare cars for you; they are not a percentage score.
-          </p>
-        </div>
+        {best ? (
+          <div className="no-break flex flex-col gap-1.5 rounded-[14px] border border-line bg-white p-[18px]">
+            <h3 className="m-0 text-[15px] font-extrabold">Fit labels</h3>
+            <p className="m-0 text-sm leading-relaxed text-[#33424D]">
+              &ldquo;Strongest fit&rdquo; and &ldquo;Close second&rdquo; compare these cars for you. They are not a percentage score.
+            </p>
+          </div>
+        ) : null}
         <div className="no-break flex flex-col gap-1.5 rounded-[14px] border border-line bg-white p-[18px]">
           <h3 className="m-0 text-[15px] font-extrabold">Data confidence</h3>
           <p className="m-0 text-sm leading-relaxed text-[#33424D]">

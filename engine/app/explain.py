@@ -54,10 +54,7 @@ TRADEOFF_TEMPLATES: dict[str, str] = {
     "ground_clearance_unknown": "Ground clearance not stated by maker.",
     "feature_not_stated": "{feature} not stated by maker — verify before buying.",
     "saves_money": "Saves ₹{amount:,} vs the top pick; see what you give up below.",
-    "no_qualifying_vehicle": (
-        "None of the vehicles in our current dataset meet all your requirements. "
-        "Here's why, and what to verify."
-    ),
+    "no_qualifying_vehicle": "None of the vehicles in our current dataset meet all your requirements.",
 }
 
 

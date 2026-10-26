@@ -88,6 +88,13 @@ export interface Slot {
   savings_vs_best_inr?: number | null;
 }
 
+/** Present only when no variant meets every need (contracts/result.schema.json, no_match). */
+export interface NoMatch {
+  reasons: string[];
+  closest_variant_key: string | null;
+  what_it_would_take: string[];
+}
+
 export interface Result {
   result_id: string;
   dataset_version: string;
@@ -96,6 +103,7 @@ export interface Result {
   slots: Slot[];
   unknowns: string[];
   disclaimer: string;
+  no_match?: NoMatch | null;
 }
 
 /** A problem with one field, as the engine and the website's server route report it. */

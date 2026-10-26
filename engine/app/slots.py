@@ -11,6 +11,7 @@ from .eligibility import (
 from .costs import budget_cost
 from .explain import fmt_lakh, fmt_ncap, render_tradeoff
 from .models import FeatureEnum, Needs, Result, ReasonCode, Slot, Variant
+from .nomatch import explain_no_match
 from .scoring import SLOW_DC_THRESHOLD_KW, RankedVariant, _assign_label, rank_variants
 from .wording import (
     FEATURE_GROUPS, factory_only_nouns, join_list, ladder_gains, lower_first, parse_ladder,
@@ -925,8 +926,12 @@ def build_result(
             if feature.value == "adaptive_suspension":
                 unknowns.append(render_tradeoff("suspension_unknown"))
 
+    no_match = None
     if not ranked:
         unknowns.insert(0, render_tradeoff("no_qualifying_vehicle"))
+        # Say why, and show the closest option with what it would take
+        no_match, closest = explain_no_match(variants, all_eligibility, needs)
+        slots = [closest] if closest is not None else []
 
     return Result(
         result_id=make_result_id(needs, dataset_version, engine_version),
@@ -936,4 +941,5 @@ def build_result(
         slots=slots,
         unknowns=unknowns,
         disclaimer=DISCLAIMER,
+        no_match=no_match,
     )

@@ -167,6 +167,40 @@
     },
     "disclaimer": {
       "type": "string"
+    },
+    "no_match": {
+      "description": "Present (an object) only when no variant meets every need: why nothing qualifies, the closest option and what it would take. null otherwise.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "reasons",
+        "closest_variant_key",
+        "what_it_would_take"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "closest_variant_key": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "variant_key of the closest option; it is also returned as a not_recommended slot."
+        },
+        "what_it_would_take": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

@@ -195,6 +195,13 @@ class Slot(BaseModel):
     sources: list[str] = Field(default_factory=list)
 
 
+class NoMatch(BaseModel):
+    """Why nothing qualifies, the closest option and what it would take (contracts/result.schema.json)."""
+    reasons: list[str]
+    closest_variant_key: Optional[str] = None
+    what_it_would_take: list[str] = Field(default_factory=list)
+
+
 class Result(BaseModel):
     result_id: str
     dataset_version: str
@@ -203,3 +210,4 @@ class Result(BaseModel):
     slots: list[Slot]
     unknowns: list[str]
     disclaimer: str
+    no_match: Optional[NoMatch] = None

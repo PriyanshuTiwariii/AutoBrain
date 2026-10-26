@@ -7,6 +7,8 @@ loadRootEnv(path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Build and run from another folder while `npm run dev` is using .next (they must not share one)
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   reactStrictMode: true,
   poweredByHeader: false,
   eslint: { ignoreDuringBuilds: true },

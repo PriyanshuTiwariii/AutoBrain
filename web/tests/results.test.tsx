@@ -57,6 +57,12 @@ describe.each(FIXTURES)("results page for %s", (name) => {
     if (result.slots.length > 0) for (const u of result.unknowns) expect(text).toContain(u);
   });
 
+  it("shows why nothing qualifies, the closest option and what it would take, when the engine says so", () => {
+    for (const line of [...(result.no_match?.reasons ?? []), ...(result.no_match?.what_it_would_take ?? [])]) {
+      expect(text).toContain(line);
+    }
+  });
+
   it("shows the disclaimer and the release", () => {
     expect(text).toContain(result.disclaimer);
     expect(text).toContain(result.dataset_version);
@@ -118,12 +124,38 @@ describe("results page details", () => {
     expect(text).toContain("No Bharat NCAP crash test for this EV");
   });
 
-  it("scenario 6: says plainly that nothing qualifies, and shows no cards", () => {
-    const html = render(fixture("scenario-6-nothing-qualifies"));
+  it("scenario 6: says plainly that nothing qualifies, why, the closest option and what it would take", () => {
+    const result = fixture("scenario-6-nothing-qualifies");
+    const html = render(result);
     const text = textOf(html);
     expect(text).toContain("Nothing in our data meets all your needs.");
-    expect(text).toContain("None of the vehicles in our current dataset");
+    expect(text).toContain("None of the vehicles in our current dataset meet all your requirements.");
+    expect(text).toContain("Why nothing qualifies");
+    expect(text).toContain("No variant within ₹8 lakh has 7 seats.");
+    expect(text).toContain("No variant within ₹8 lakh is confirmed to have AWD (not stated by the maker for Tata Tiago.ev Smart 19).");
+    expect(text).toContain("The closest option");
+    expect(text).toContain("Tata Tiago.ev Smart 19");
+    expect(text).toContain("What it would take to get that option");
+    expect(text).toContain("Accept 5 seats; you asked for 7.");
+    expect(text).toContain("Confirm with the maker: AWD is not stated for this variant.");
+    // the closest option is a plain block, not a recommendation card
     expect(html).not.toContain("<article");
+    // no dangling promise
+    expect(text).not.toContain("Here's why");
+    // and not shown a second time as a "considered, not recommended" box
+    expect(text).not.toContain("Considered, not recommended for you");
+  });
+
+  it("the fit-label note appears only when there are fit labels to explain", () => {
+    expect(textOf(render(fixture("scenario-1")))).toContain("They are not a percentage score.");
+    expect(textOf(render(fixture("scenario-1")))).not.toContain("compare cars for you");
+    expect(textOf(render(fixture("scenario-6-nothing-qualifies")))).not.toContain("Fit labels");
+  });
+
+  it("when matches exist the page has no nothing-qualifies section", () => {
+    const text = textOf(render(fixture("scenario-1")));
+    expect(text).not.toContain("Why nothing qualifies");
+    expect(text).toContain("Considered, not recommended for you");
   });
 
   it("scenario 5: a side-by-side table compares the recommended cars", () => {

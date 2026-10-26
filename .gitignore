@@ -10,3 +10,4 @@ out/
 ~$*.xlsx
 scenario_output.txt
 *.tsbuildinfo
+.next-*/

@@ -10,9 +10,46 @@
     "Must-haves: awd",
     "Priority: balanced"
   ],
-  "slots": [],
-  "unknowns": [
-    "None of the vehicles in our current dataset meet all your requirements. Here's why, and what to verify."
+  "slots": [
+    {
+      "slot": "not_recommended",
+      "variant_key": "TATA-TIAGOEV-SMART19-192",
+      "match_score": 0,
+      "confidence": "",
+      "price_inr": 699000,
+      "price_status": "verified",
+      "metrics": {
+        "brand": "Tata",
+        "model": "Tiago.ev",
+        "variant": "Smart 19",
+        "seats": 5
+      },
+      "reasons": [
+        {
+          "code": "excluded",
+          "detail": "Only 5 seats (need 7+)"
+        }
+      ],
+      "tradeoffs": [],
+      "watch_outs": [],
+      "savings_vs_best_inr": null,
+      "gap_filler_accessories": [],
+      "sources": []
+    }
   ],
-  "disclaimer": "This recommendation is based on publicly available data as of the dataset release date. Prices are ex-showroom and exclude registration, insurance, offers and financing. Verify all details with the dealer before purchasing."
+  "unknowns": [
+    "None of the vehicles in our current dataset meet all your requirements."
+  ],
+  "disclaimer": "This recommendation is based on publicly available data as of the dataset release date. Prices are ex-showroom and exclude registration, insurance, offers and financing. Verify all details with the dealer before purchasing.",
+  "no_match": {
+    "reasons": [
+      "No variant within ₹8 lakh has 7 seats.",
+      "No variant within ₹8 lakh is confirmed to have AWD (not stated by the maker for Tata Tiago.ev Smart 19)."
+    ],
+    "closest_variant_key": "TATA-TIAGOEV-SMART19-192",
+    "what_it_would_take": [
+      "Accept 5 seats; you asked for 7.",
+      "Confirm with the maker: AWD is not stated for this variant."
+    ]
+  }
 }

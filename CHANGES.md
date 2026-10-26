@@ -102,6 +102,26 @@ Also keep the plan's determinism, LLM-failure and adversarial-input tests.
 - Verify each CSV's SHA-256 against `manifest.json`; refuse to start on mismatch.
 - Log `release`, row counts and engine version on every result.
 
+## 11. When nothing qualifies
+
+Golden scenario 6 and any other request that no variant meets. The Result keeps `slots` free of recommendations
+and adds a `no_match` object (`contracts/result.schema.json`); `unknowns[0]` is the plain statement.
+
+- `no_match.reasons`: one line for each need that no variant meets, within the buyer's budget, for example
+  "No variant within ₹8 lakh has 7 seats." If nothing fits the budget at all, the first line names the cheapest
+  variant and its price. If every need can be met by some variant but not by the same one, it names the pairs.
+- **Unknown is never "no".** If the only variants that could meet a need are ones where the maker has not stated
+  it, the line says "No variant within ₹8 lakh is confirmed to have AWD (not stated by the maker for ...)",
+  not "no AWD variant".
+- `no_match.closest_variant_key` is the variant that misses the fewest of the buyer's needs (then the smallest
+  budget overrun, then the most car for the money). It is also returned as one `not_recommended` slot with the
+  engine's own fail reasons.
+- `no_match.what_it_would_take` says what the buyer would change to get that variant: raise the budget (to the
+  price plus the wall charger, when the charger counts), accept fewer seats, or drop a must-have. Needs that are
+  met only on paper (unstated by the maker) are listed as "Confirm with the maker: ...".
+- The buyer's pricing, body type and excluded-model choices define what is considered; they are not offered as
+  things to trade away. If they leave nothing to consider, the reason says so and there is no closest option.
+
 ## Later
 
 - Store watch-outs as codes in the data release instead of sentences, so the engine can filter them by context.
