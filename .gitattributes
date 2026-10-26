@@ -1,0 +1,2 @@
+# Release CSVs are hashed in manifest.json: never convert their line endings
+data/releases/**/*.csv -text
