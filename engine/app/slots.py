@@ -864,24 +864,37 @@ def assign_slots(
     return slots
 
 
+# Buyer-facing wording for the Needs chips (the raw enum values are for code, not for people)
+_HOME_CHARGING_TEXT = {"yes": "yes", "no": "no", "unsure": "not sure"}
+_PRIORITY_TEXT = {"cost": "lowest cost"}
+_PRICING_TEXT = {
+    "baas": "battery financing (BaaS)",
+    "either": "battery included or battery financing (BaaS)",
+}
+
+
+def _feature_names(features: list[FeatureEnum]) -> str:
+    return ", ".join(_FEATURE_LABELS.get(f, f.value) for f in features)
+
+
 def _needs_summary(needs: Needs) -> list[str]:
     lines = [
         f"Budget: {fmt_lakh(needs.budget_max_inr)}",
         f"Seats: {needs.seats_min}+",
         f"Daily driving: {needs.daily_km} km",
-        f"Home charging: {needs.home_charging.value}",
+        f"Home charging: {_HOME_CHARGING_TEXT.get(needs.home_charging.value, needs.home_charging.value)}",
     ]
     if needs.longest_regular_trip_km:
         lines.append(f"Longest regular trip: {needs.longest_regular_trip_km} km")
     if needs.body_types:
         lines.append(f"Body types: {', '.join(bt.value for bt in needs.body_types)}")
     if needs.must_haves:
-        lines.append(f"Must-haves: {', '.join(f.value for f in needs.must_haves)}")
+        lines.append(f"Must-haves: {_feature_names(needs.must_haves)}")
     if needs.nice_to_haves:
-        lines.append(f"Nice-to-haves: {', '.join(f.value for f in needs.nice_to_haves)}")
-    lines.append(f"Priority: {needs.priority.value}")
+        lines.append(f"Nice-to-haves: {_feature_names(needs.nice_to_haves)}")
+    lines.append(f"Priority: {_PRIORITY_TEXT.get(needs.priority.value, needs.priority.value)}")
     if needs.pricing_pref != "buy":
-        lines.append(f"Pricing: {needs.pricing_pref.value}")
+        lines.append(f"Pricing: {_PRICING_TEXT.get(needs.pricing_pref.value, needs.pricing_pref.value)}")
     return lines
 
 

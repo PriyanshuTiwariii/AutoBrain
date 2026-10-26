@@ -339,3 +339,36 @@ def test_cards_carry_names_and_crash_status_label(dataset):
                 assert shown == "No Bharat NCAP crash test for this EV"
             else:
                 assert "may not cover" in shown or "not stated" in shown
+
+
+def test_needs_summary_is_in_words_not_enum_names(dataset):
+    needs = Needs(
+        budget_max_inr=1_800_000, seats_min=5, daily_km=50, longest_regular_trip_km=280,
+        home_charging="unsure", body_types=["SUV coupé"],
+        must_haves=["camera_360", "awd", "crash_tested"], nice_to_haves=["ventilated_seats", "lifetime_battery_warranty"],
+        priority="cost", pricing_pref="either",
+    )
+    result = build_result(needs, dataset.variants, dataset.version, dataset.engine_version, dataset=dataset)
+    assert result.needs_summary == [
+        "Budget: ₹18 lakh",
+        "Seats: 5+",
+        "Daily driving: 50 km",
+        "Home charging: not sure",
+        "Longest regular trip: 280 km",
+        "Body types: SUV coupé",
+        "Must-haves: 360° camera, AWD, Crash test rating",
+        "Nice-to-haves: Ventilated seats, Lifetime battery warranty",
+        "Priority: lowest cost",
+        "Pricing: battery included or battery financing (BaaS)",
+    ]
+    joined = " ".join(result.needs_summary)
+    for raw in ("camera_360", "crash_tested", "ventilated_seats", "lifetime_battery_warranty", "unsure", "baas"):
+        assert raw not in joined
+
+
+def test_needs_summary_covers_every_feature_without_raw_names():
+    from app.models import FeatureEnum
+    from app.slots import _feature_names
+    for feature in FeatureEnum:
+        shown = _feature_names([feature])
+        assert shown and "_" not in shown, f"{feature.value} → {shown!r}"

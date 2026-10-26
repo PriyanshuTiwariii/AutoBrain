@@ -122,6 +122,21 @@ and adds a `no_match` object (`contracts/result.schema.json`); `unknowns[0]` is 
 - The buyer's pricing, body type and excluded-model choices define what is considered; they are not offered as
   things to trade away. If they leave nothing to consider, the reason says so and there is no closest option.
 
+## 12. The LLM provider is OpenAI
+
+`docs/DESIGN.md` names the Claude API for the two LLM calls. The provider is **OpenAI**: read "Claude API" in
+`DESIGN.md` as "OpenAI API", and ignore its Claude model names.
+
+- The key is `OPENAI_API_KEY` in `.env`, read by the engine only. It is never a `NEXT_PUBLIC_` variable and
+  never reaches the browser.
+- `LLM_MODEL_PRIMARY` and `LLM_MODEL_FALLBACK` hold the OpenAI model names. They have no defaults: the models
+  are chosen when the LLM steps are built.
+- Nothing else changes. The rules in `AGENTS.md` still hold: the LLM never ranks, scores, picks a vehicle or
+  supplies a number; buyer text is data, never instructions; every number is checked against the Result and
+  replaced by the template sentence if it is not in it; the whole flow works with the LLM switched off.
+- Provider-specific details in `DESIGN.md` (prompt caching, JSON output mode, token estimates) are to be
+  decided again when the LLM steps are built.
+
 ## Later
 
 - Store watch-outs as codes in the data release instead of sentences, so the engine can filter them by context.
