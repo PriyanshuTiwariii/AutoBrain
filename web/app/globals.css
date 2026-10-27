@@ -14,3 +14,25 @@ a:hover { color: #08445F; }
   @page { margin: 12mm; }
   .no-break { break-inside: avoid; }
 }
+
+/* Landing page car: the road scrolls past while the car gently bobs and the wheels turn */
+.hero-road-lines { animation: hero-road 1.2s linear infinite; }
+.hero-car { animation: hero-bob 1.6s ease-in-out infinite; transform-origin: 320px 200px; }
+.hero-wheel { animation: hero-spin 0.8s linear infinite; }
+.hero-hills { animation: hero-drift 24s linear infinite alternate; }
+.hero-hills-near { animation: hero-drift 14s linear infinite alternate; }
+.hero-bolt { animation: hero-pulse 1.8s ease-in-out infinite; }
+.hero-sun { animation: hero-pulse 4s ease-in-out infinite; }
+@keyframes hero-road { to { transform: translateX(-80px); } }
+@keyframes hero-bob { 50% { transform: translateY(-2px); } }
+@keyframes hero-spin { to { transform: rotate(360deg); } }
+@keyframes hero-drift { to { transform: translateX(-40px); } }
+@keyframes hero-pulse { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-road-lines, .hero-car, .hero-wheel, .hero-hills, .hero-hills-near, .hero-bolt, .hero-sun { animation: none; }
+}
+
+/* Landing page photo: a slow, gentle zoom */
+.hero-photo-img { animation: hero-zoom 18s ease-in-out infinite alternate; }
+@keyframes hero-zoom { from { transform: scale(1); } to { transform: scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .hero-photo-img { animation: none; } }
