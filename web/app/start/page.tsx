@@ -1,144 +1,151 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import DescribeBox from "@/components/DescribeBox";
 import Header from "@/components/Header";
-import { applyExtraction } from "@/lib/extract";
+import { BudgetHelper, CommuteHelper } from "@/components/chat/Helpers";
+import { MAX_TEXT_CHARS, UNAVAILABLE, isExtractResponse } from "@/lib/extract";
 import {
-  EMPTY_FORM,
-  FEATURES,
-  HOME_CHARGING_OPTIONS,
-  PRIORITIES,
-  ROAD_CONDITIONS,
-  buildNeeds,
-  formFieldFor,
-  type FormState,
-} from "@/lib/needs";
+  applyPatch, chipsFor, formToPartial, isQuestionResponse, markAsked, mergeExtraction, removeField, toFormState,
+  toRecommendNeeds,
+} from "@/lib/guided";
 import { getVisitId, loadForm, saveForm, saveResult } from "@/lib/storage";
-import type { ExtractResponse, Feature, FieldProblem, Result } from "@/lib/types";
+import type { ExtractResponse, FieldProblem, NeedsInput, OptionalField, PartialNeeds, QuestionResponse, Result } from "@/lib/types";
 
 const INPUT =
-  "min-h-12 w-full rounded-xl border border-[#A9B6BF] bg-white px-3.5 py-2.5 text-base text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30";
-const LABEL = "text-[15px] font-bold";
-const HINT = "text-[13px] text-muted";
+  "min-h-12 w-full rounded-xl border border-[#A9B6BF] bg-white px-3.5 py-2.5 text-base text-ink placeholder:text-[#7A8892] focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30";
+const PRIMARY = "min-h-12 rounded-xl bg-brand px-8 py-3.5 text-base font-extrabold text-white hover:bg-brand-dark disabled:opacity-60";
+const SECONDARY = "min-h-12 rounded-xl border border-brand bg-white px-6 py-3 text-base font-extrabold text-brand hover:bg-sky disabled:opacity-50";
 
-function Field({
-  label, hint, error, children,
-}: { label: string; hint?: string; error?: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className={LABEL}>{label}</label>
-      {hint ? <div className={HINT}>{hint}</div> : null}
-      {children}
-      {error ? <div role="alert" className="text-sm font-semibold text-warn">{error}</div> : null}
-    </div>
-  );
-}
+const EXAMPLES = [
+  "Family car for bad roads and daily office travel",
+  "I'm 24, just got a job, office is 15 km away, budget around 12 lakh",
+  "Family of 5, 18 lakh, we live in a flat with shared parking",
+];
 
-function FeatureBoxes({
-  legend, hint, selected, disabled, onToggle,
-}: {
-  legend: string; hint: string; selected: Feature[]; disabled: Feature[]; onToggle: (f: Feature) => void;
-}) {
-  return (
-    <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-      <legend className={`${LABEL} mb-1 p-0`}>{legend}</legend>
-      <div className={HINT}>{hint}</div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {FEATURES.map((f) => {
-          const isOff = disabled.includes(f.value);
-          return (
-            <label
-              key={f.value}
-              className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 text-[15px] ${
-                selected.includes(f.value) ? "border-brand bg-sky font-semibold" : "border-line bg-white"
-              } ${isOff ? "cursor-not-allowed opacity-40" : ""}`}
-            >
-              <input
-                type="checkbox"
-                className="h-5 w-5 accent-brand"
-                checked={selected.includes(f.value)}
-                disabled={isOff}
-                onChange={() => onToggle(f.value)}
-              />
-              {f.label}
-            </label>
-          );
-        })}
-      </div>
-    </fieldset>
-  );
+async function readTyped(text: string): Promise<ExtractResponse> {
+  try {
+    const reply = await fetch("/api/extract", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    const body: unknown = await reply.json().catch(() => null);
+    return reply.ok && isExtractResponse(body) ? body : UNAVAILABLE;
+  } catch {
+    return UNAVAILABLE;
+  }
 }
 
 export default function StartPage() {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  // The answer can arrive seconds after the button was pressed: apply it to the form as it is now, not as it was then
-  const latestForm = useRef(form);
-  latestForm.current = form;
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formError, setFormError] = useState<string | null>(null);
+  const [needs, setNeeds] = useState<PartialNeeds>({});
+  const [asked, setAsked] = useState<OptionalField[]>([]);
+  const [question, setQuestion] = useState<QuestionResponse | null>(null);
+  const [intro, setIntro] = useState("");
+  const [typed, setTyped] = useState("");
+  const [note, setNote] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [helperOpen, setHelperOpen] = useState(false);
+  const started = question !== null;
+  const latest = useRef({ needs, asked });
+  latest.current = { needs, asked };
 
-  // Bring back what the buyer typed before (e.g. coming from "Edit my needs"); also starts this visit's random ID
+  async function advance(nextNeeds: PartialNeeds, nextAsked: OptionalField[]) {
+    setNeeds(nextNeeds);
+    setAsked(nextAsked);
+    setHelperOpen(false);
+    setTyped("");
+    setError(null);
+    setBusy(true);
+    try {
+      const reply = await fetch("/api/next-question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ needs: nextNeeds, asked: nextAsked }),
+      });
+      const body: unknown = await reply.json().catch(() => null);
+      if (reply.ok && isQuestionResponse(body)) setQuestion(body);
+      else setError("We could not get the next question. Please try again in a moment.");
+    } catch {
+      setError("We could not reach the server. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Only "Edit my needs" (?edit=1) brings back earlier answers. A fresh visit always starts empty.
   useEffect(() => {
     getVisitId();
-    setForm(loadForm());
+    if (new URLSearchParams(window.location.search).get("edit") !== "1") return;
+    const before = formToPartial(loadForm());
+    if (Object.keys(before).length > 0) void advance(before, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((f) => ({ ...f, [key]: value }));
-    setErrors((e) => ({ ...e, [key]: "" }));
-  };
-
-  const toggle = (key: "mustHaves" | "niceToHaves", feature: Feature) => {
-    setForm((f) => {
-      const has = f[key].includes(feature);
-      return { ...f, [key]: has ? f[key].filter((x) => x !== feature) : [...f[key], feature] };
-    });
-  };
-
-  // "Describe what you need" only fills the form in; nothing is submitted until the buyer presses the button
-  const applyDescription = (response: ExtractResponse) => {
-    const applied = applyExtraction(latestForm.current, response);
-    latestForm.current = applied.form;
-    setForm(applied.form);
-    setErrors({});
-    setFormError(null);
-    return applied;
-  };
-
-  const showProblems = (problems: FieldProblem[]) => {
-    const byField: Record<string, string> = {};
-    const general: string[] = [];
-    for (const p of problems) {
-      const target = formFieldFor(p.field);
-      if (target === "form") general.push(p.message);
-      else byField[target] = byField[target] ? `${byField[target]} ${p.message}` : p.message;
+  async function describe() {
+    const text = intro.trim();
+    if (!text || busy) return;
+    setBusy(true);
+    setNote(null);
+    const response = await readTyped(text);
+    let merged = needs;
+    if (response.status === "unavailable") {
+      setNote("Typing isn't available right now. No problem: just answer a few quick questions.");
+    } else if (response.status === "off_topic") {
+      setNote(response.message);
+    } else {
+      merged = mergeExtraction(needs, response);
+      if (Object.keys(merged).length === Object.keys(needs).length && JSON.stringify(merged) === JSON.stringify(needs)) {
+        setNote(response.message ?? "We could not pick out any details, so let us ask you a few quick questions.");
+      }
     }
-    setErrors(byField);
-    // The field messages can be scrolled out of sight above the button, so say it here too
-    const summary = [...general, ...Object.values(byField)];
-    setFormError(summary.length ? summary.join(" ") : null);
-  };
+    setIntro("");
+    await advance(merged, asked);
+  }
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setFormError(null);
-    const { needs, problems } = buildNeeds(form);
-    if (!needs) {
-      showProblems(problems);
+  function choose(patch: PartialNeeds) {
+    if (!question || busy) return;
+    void advance(applyPatch(needs, patch), markAsked(asked, question.field));
+  }
+
+  async function answerTyped() {
+    const text = typed.trim();
+    if (!text || !question?.field || busy) return;
+    setBusy(true);
+    setNote(null);
+    const response = await readTyped(text);
+    const merged = response.status === "unavailable" || response.status === "off_topic" ? needs : mergeExtraction(needs, response, question.field);
+    if (JSON.stringify(merged) === JSON.stringify(needs)) {
+      setBusy(false);
+      setNote("We could not read that one. Please tap one of the options above.");
       return;
     }
-    setErrors({});
+    await advance(merged, markAsked(asked, question.field));
+  }
+
+  function forget(field: keyof NeedsInput) {
+    void advance(removeField(needs, field), asked);
+  }
+
+  const showProblems = (problems: FieldProblem[]) => setError(problems.map((p) => p.message).join(" "));
+
+  async function showShortlist() {
+    const built = toRecommendNeeds(needs);
+    if (!built.needs) {
+      showProblems(built.problems);
+      return;
+    }
     setBusy(true);
-    saveForm(form);
+    setError(null);
+    saveForm(toFormState(needs));
     try {
       const response = await fetch("/api/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(needs),
+        body: JSON.stringify(built.needs),
       });
       const body: unknown = await response.json().catch(() => null);
       if (response.ok && body && typeof body === "object" && "slots" in body) {
@@ -148,161 +155,190 @@ export default function StartPage() {
       }
       const detail = (body as { detail?: FieldProblem[] } | null)?.detail;
       if (Array.isArray(detail) && detail.length) showProblems(detail);
-      else setFormError("Something went wrong. Please try again.");
+      else setError("Something went wrong. Please try again.");
     } catch {
-      setFormError("We could not reach the server. Check your connection and try again.");
+      setError("We could not reach the server. Check your connection and try again.");
     } finally {
       setBusy(false);
     }
   }
 
+  const chips = chipsFor(needs);
+  const finished = question?.done === true;
+
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-[720px] px-5 pb-20 pt-8 md:px-8 md:pt-12">
-        <h1 className="m-0 mb-2 text-[28px] font-extrabold tracking-tight md:text-4xl">What do you need?</h1>
-        <p className="m-0 mb-8 text-base text-muted">Answer what you can. We only recommend cars the data can back up.</p>
+      <main className="mx-auto max-w-[720px] px-5 pb-24 pt-8 md:px-8 md:pt-12">
+        <h1 className="m-0 mb-2 text-[28px] font-extrabold tracking-tight md:text-4xl">Let&apos;s find your car</h1>
+        <p className="m-0 mb-6 text-base text-muted">
+          No car knowledge needed. Tell us about your life and we will work out the rest. We only recommend cars the data can back up.
+        </p>
 
-        <DescribeBox onApply={applyDescription} />
-
-        <form onSubmit={onSubmit} noValidate className="flex flex-col gap-7">
-          <Field label="Budget (₹ lakh)" hint="The most you want to spend, ex-showroom. For example 15 or 12.5." error={errors.budgetLakh}>
-            <input
-              className={INPUT}
-              inputMode="decimal"
-              placeholder="15"
-              value={form.budgetLakh}
-              onChange={(e) => set("budgetLakh", e.target.value)}
-              aria-label="Budget in lakh rupees"
-            />
-          </Field>
-
-          <Field label="Seats" hint="The fewest seats you need." error={errors.seats}>
-            <select className={INPUT} value={form.seats} onChange={(e) => set("seats", e.target.value)} aria-label="Seats needed">
-              {[2, 3, 4, 5, 6, 7].map((n) => (
-                <option key={n} value={n}>{n} or more</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Daily driving (km)" hint="A typical day." error={errors.dailyKm}>
-            <input
-              className={INPUT}
-              inputMode="numeric"
-              placeholder="40"
-              value={form.dailyKm}
-              onChange={(e) => set("dailyKm", e.target.value)}
-              aria-label="Daily driving in km"
-            />
-          </Field>
-
-          <Field label="Longest regular trip (km), optional" hint="One way, for a trip you do regularly. Leave empty if you have none." error={errors.tripKm}>
-            <input
-              className={INPUT}
-              inputMode="numeric"
-              placeholder="e.g. 300"
-              value={form.tripKm}
-              onChange={(e) => set("tripKm", e.target.value)}
-              aria-label="Longest regular trip in km"
-            />
-          </Field>
-
-          <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-            <legend className={`${LABEL} mb-1 p-0`}>Can you charge at home?</legend>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {HOME_CHARGING_OPTIONS.map((o) => (
-                <label
-                  key={o.value}
-                  className={`flex min-h-12 cursor-pointer flex-col justify-center rounded-xl border px-3.5 py-2.5 ${
-                    form.homeCharging === o.value ? "border-brand bg-sky" : "border-line bg-white"
-                  }`}
-                >
-                  <span className="flex items-center gap-3 text-[15px] font-semibold">
-                    <input
-                      type="radio"
-                      name="homeCharging"
-                      className="h-5 w-5 accent-brand"
-                      checked={form.homeCharging === o.value}
-                      onChange={() => set("homeCharging", o.value)}
-                    />
-                    {o.label}
+        {chips.length > 0 ? (
+          <section aria-label="What we understood" className="mb-6 rounded-2xl border border-line bg-surface p-4">
+            <h2 className="m-0 mb-2 text-[15px] font-extrabold">What we understood so far</h2>
+            <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+              {chips.map((c) => (
+                <li key={c.field} className="flex items-center gap-2 rounded-full border border-line bg-white py-1.5 pl-3.5 pr-2 text-[14px]">
+                  <span>
+                    <span className="text-muted">{c.label}: </span>
+                    <span className="font-bold">{c.value}</span>
                   </span>
-                  <span className="pl-8 text-[13px] text-muted">{o.hint}</span>
-                </label>
+                  <button
+                    type="button"
+                    onClick={() => forget(c.field)}
+                    disabled={busy}
+                    className="min-h-8 rounded-full px-2.5 text-[13px] font-bold text-brand hover:bg-sky disabled:opacity-50"
+                    aria-label={`Change ${c.label}`}
+                  >
+                    Change
+                  </button>
+                </li>
               ))}
-            </div>
-            {errors.homeCharging ? <div role="alert" className="text-sm font-semibold text-warn">{errors.homeCharging}</div> : null}
-          </fieldset>
+            </ul>
+          </section>
+        ) : null}
 
-          <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-            <legend className={`${LABEL} mb-1 p-0`}>What roads do you drive on?</legend>
-            <div className={HINT}>We rank cars with higher stated ground clearance (and all-wheel drive for light off-road) higher. We never rule a car out for this.</div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {ROAD_CONDITIONS.map((o) => (
-                <label
-                  key={o.value}
-                  className={`flex min-h-12 cursor-pointer flex-col justify-center rounded-xl border px-3.5 py-2.5 ${
-                    form.roadConditions === o.value ? "border-brand bg-sky" : "border-line bg-white"
-                  }`}
+        {!started ? (
+          <section aria-label="Tell us what you need" className="flex flex-col gap-3 rounded-[18px] border border-line bg-white p-5">
+            <h2 className="m-0 text-lg font-extrabold">Tell us what you need</h2>
+            <p className="m-0 text-[14px] text-muted">
+              Write it your way, in English or Hinglish. Don&apos;t worry about car words. We will ask about anything we are missing.
+            </p>
+            <textarea
+              aria-label="Tell us what you need"
+              className={`${INPUT} min-h-28 resize-y`}
+              placeholder="For example: I need an affordable family car for bad roads and daily office travel."
+              maxLength={MAX_TEXT_CHARS}
+              value={intro}
+              onChange={(e) => setIntro(e.target.value)}
+            />
+            <div className="flex flex-wrap gap-2" aria-label="Examples">
+              {EXAMPLES.map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => setIntro(e)}
+                  className="min-h-10 rounded-full border border-line bg-surface px-3.5 py-2 text-left text-[13px] hover:bg-sky"
                 >
-                  <span className="flex items-center gap-3 text-[15px] font-semibold">
-                    <input
-                      type="radio"
-                      name="roadConditions"
-                      className="h-5 w-5 accent-brand"
-                      checked={form.roadConditions === o.value}
-                      onChange={() => set("roadConditions", o.value)}
-                    />
-                    {o.label}
-                  </span>
-                  <span className="pl-8 text-[13px] text-muted">{o.hint}</span>
-                </label>
+                  {e}
+                </button>
               ))}
             </div>
-          </fieldset>
-
-          <FeatureBoxes
-            legend="Must-haves"
-            hint="We will only show cars that have these."
-            selected={form.mustHaves}
-            disabled={form.niceToHaves}
-            onToggle={(f) => toggle("mustHaves", f)}
-          />
-          <FeatureBoxes
-            legend="Nice-to-haves"
-            hint="A bonus if a car has them. We will not rule a car out for lacking them."
-            selected={form.niceToHaves}
-            disabled={form.mustHaves}
-            onToggle={(f) => toggle("niceToHaves", f)}
-          />
-
-          <Field label="What matters most?" error={errors.priority}>
-            <select
-              className={INPUT}
-              value={form.priority}
-              onChange={(e) => set("priority", e.target.value as FormState["priority"])}
-              aria-label="Priority"
-            >
-              {PRIORITIES.map((p) => (
-                <option key={p.value} value={p.value}>{p.label}: {p.hint}</option>
-              ))}
-            </select>
-          </Field>
-
-          {formError ? (
-            <div role="alert" className="rounded-xl border border-warn-line bg-warn-bg p-4 text-[15px] font-semibold text-warn-ink">
-              {formError}
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="button" onClick={describe} disabled={busy || intro.trim() === ""} className={PRIMARY}>
+                {busy ? "Reading…" : "Continue"}
+              </button>
+              <button type="button" onClick={() => void advance(needs, asked)} disabled={busy} className={SECONDARY}>
+                I&apos;d rather answer questions
+              </button>
             </div>
-          ) : null}
+            <span className="text-[13px] text-muted">Your message is not saved.</span>
+          </section>
+        ) : null}
 
-          <button
-            type="submit"
-            disabled={busy}
-            className="min-h-12 rounded-xl bg-brand px-8 py-3.5 text-base font-extrabold text-white hover:bg-brand-dark disabled:opacity-60"
-          >
-            {busy ? "Finding your shortlist…" : "Show my shortlist"}
-          </button>
-        </form>
+        {note ? (
+          <div role="status" className="mb-4 mt-4 rounded-xl border border-line bg-surface p-3.5 text-[15px] leading-relaxed">
+            {note}
+          </div>
+        ) : null}
+
+        {started && question && !finished ? (
+          <section aria-label="Next question" className="flex flex-col gap-4 rounded-[18px] border border-line bg-white p-5">
+            <div>
+              <h2 className="m-0 text-xl font-extrabold">{question.question}</h2>
+              {question.why ? <p className="m-0 mt-1 text-[14px] text-muted">{question.why}</p> : null}
+              {question.kind === "optional" ? (
+                <p className="m-0 mt-1 text-[13px] font-semibold text-brand">Optional: this one changes which cars we show first.</p>
+              ) : null}
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              {question.cards.map((card) => (
+                <button
+                  key={card.id}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => choose(card.patch)}
+                  className="flex min-h-14 flex-col justify-center rounded-xl border border-line bg-white px-4 py-3 text-left hover:border-brand hover:bg-sky disabled:opacity-60"
+                >
+                  <span className="text-[16px] font-bold">{card.label}</span>
+                  {card.sublabel ? <span className="text-[13px] text-muted">{card.sublabel}</span> : null}
+                </button>
+              ))}
+            </div>
+
+            {question.helper ? (
+              <div className="flex flex-col gap-3">
+                <button type="button" onClick={() => setHelperOpen((o) => !o)} className="self-start text-[15px] font-bold text-brand underline">
+                  {helperOpen ? "Hide the helper" : question.helper === "budget_emi" ? "I don't know. Help me decide" : "I'm not sure. Help me work it out"}
+                </button>
+                {helperOpen && question.helper === "budget_emi" ? (
+                  <BudgetHelper onUse={(inr) => choose({ budget_max_inr: inr })} />
+                ) : null}
+                {helperOpen && question.helper === "commute_minutes" ? (
+                  <CommuteHelper onUse={(km) => choose({ daily_km: km })} />
+                ) : null}
+              </div>
+            ) : null}
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="typed" className="text-[14px] font-bold">Or type it your way</label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  id="typed"
+                  className={INPUT}
+                  placeholder={question.example ?? ""}
+                  maxLength={MAX_TEXT_CHARS}
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void answerTyped();
+                  }}
+                />
+                <button type="button" onClick={answerTyped} disabled={busy || typed.trim() === ""} className={SECONDARY}>
+                  Send
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        {started && finished ? (
+          <section aria-label="Ready" className="flex flex-col gap-3 rounded-[18px] border border-good/30 bg-good-bg p-5">
+            <h2 className="m-0 text-xl font-extrabold text-good-ink">That&apos;s all we need</h2>
+            <p className="m-0 text-[15px] text-good-ink">
+              Check what we understood above. Change anything that is wrong, then see your shortlist.
+            </p>
+          </section>
+        ) : null}
+
+        {error ? (
+          <div role="alert" className="mt-4 rounded-xl border border-warn-line bg-warn-bg p-4 text-[15px] font-semibold text-warn-ink">
+            {error}
+          </div>
+        ) : null}
+
+        {started && question?.can_show_results ? (
+          <div className="mt-6 flex flex-col gap-2">
+            <button type="button" onClick={showShortlist} disabled={busy} className={finished ? PRIMARY : SECONDARY}>
+              {busy ? "Finding your shortlist…" : finished ? "Show my shortlist" : "Skip the rest, show my shortlist now"}
+            </button>
+            {!finished && question.missing_required.length > 0 ? (
+              <span className="text-[13px] text-muted">
+                We have not asked about parking yet. Costs will assume you can charge at home, and the results will say so.
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
+        <p className="mt-10 text-[14px] text-muted">
+          Know your cars already?{" "}
+          <Link href="/start/advanced" className="font-bold">
+            Show me all the options
+          </Link>
+        </p>
       </main>
     </>
   );

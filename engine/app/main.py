@@ -16,13 +16,15 @@ from fastapi.security import APIKeyHeader
 
 from . import config
 from .contracts import (
-    EXTRACT_REQUEST_SCHEMA, EXTRACT_RESPONSE_SCHEMA, NEEDS_SCHEMA, RESULT_SCHEMA, extract_request_errors,
-    extract_response_errors, needs_errors, result_errors, schema_for_docs,
+    EXTRACT_REQUEST_SCHEMA, EXTRACT_RESPONSE_SCHEMA, NEEDS_SCHEMA, QUESTIONS_REQUEST_SCHEMA,
+    QUESTIONS_RESPONSE_SCHEMA, RESULT_SCHEMA, extract_request_errors, extract_response_errors, needs_errors,
+    questions_request_errors, questions_response_errors, result_errors, schema_for_docs,
 )
 from .dataset import Dataset, load_dataset
 from .extract import extract_needs
 from .llm import LLMClient, LLMSettings, build_client
 from .models import Needs
+from .questions import next_question
 from .slots import build_result
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(name)s  %(message)s")
@@ -299,6 +301,49 @@ def create_app(
         invalid = extract_response_errors(payload)
         if invalid:
             logger.error("Extract response failed extract.response.schema.json: %s", "; ".join(invalid))
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "The engine produced an invalid response. This has been logged; nothing was returned."},
+            )
+        return JSONResponse(content=payload)
+
+    @app.post(
+        "/next_question",
+        openapi_extra={
+            "requestBody": {
+                "required": True,
+                "content": {"application/json": {"schema": schema_for_docs(QUESTIONS_REQUEST_SCHEMA)}},
+            },
+        },
+        responses={
+            200: {
+                "description": "The next follow-up (contracts/questions.response.schema.json)",
+                "content": {"application/json": {"schema": schema_for_docs(QUESTIONS_RESPONSE_SCHEMA)}},
+            },
+            401: {"description": "Missing or wrong X-Engine-Secret header"},
+            422: {"description": "The request is not valid; each problem names its field in plain English"},
+        },
+        dependencies=[Depends(require_secret)],
+        summary="What is known so far in, the next easy follow-up out (pure engine, no LLM)",
+    )
+    async def next_question_route(request: Request):
+        ds: Dataset = request.app.state.dataset
+        body, bad = _parse_json_body(await request.body())
+        if bad is not None:
+            return bad
+        problems = questions_request_errors(body)
+        if problems:
+            return JSONResponse(status_code=422, content={"detail": problems})
+        try:
+            payload = await run_in_threadpool(next_question, body["needs"], body.get("asked", []), ds.variants)
+        except Exception:
+            logger.exception("Engine failed to choose a follow-up question (release %s)", ds.version)
+            return JSONResponse(
+                status_code=500, content={"detail": "The engine failed to choose the next question. This has been logged."},
+            )
+        invalid = questions_response_errors(payload)
+        if invalid:
+            logger.error("Question response failed questions.response.schema.json: %s", "; ".join(invalid))
             return JSONResponse(
                 status_code=500,
                 content={"detail": "The engine produced an invalid response. This has been logged; nothing was returned."},

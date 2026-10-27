@@ -11,6 +11,11 @@ from .eligibility import (
 from .costs import budget_cost
 from .explain import fmt_lakh, fmt_ncap, render_tradeoff
 from .terrain import NOT_OFFROAD_NOTE, terrain_reasons, terrain_tradeoffs
+
+NOT_SURE_CHARGING_NOTE = (
+    "You are not sure you can charge at home, so the running and 5-year costs assume you can, with a home charger "
+    "(shown as assumed). If you cannot, running costs will be higher and slower public charging matters more."
+)
 from .models import FeatureEnum, Needs, Result, ReasonCode, Slot, Variant
 from .nomatch import explain_no_match
 from .scoring import SLOW_DC_THRESHOLD_KW, RankedVariant, _assign_label, rank_variants
@@ -952,6 +957,9 @@ def build_result(
 
     if needs.road_conditions.value == "light_offroad":
         unknowns.append(NOT_OFFROAD_NOTE)
+
+    if needs.home_charging.value == "unsure":
+        unknowns.append(NOT_SURE_CHARGING_NOTE)
 
     no_match = None
     if not ranked:

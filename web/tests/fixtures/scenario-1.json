@@ -1,5 +1,5 @@
 {
-  "result_id": "d4d0b1a056fc54e5",
+  "result_id": "91f83d2c82faf507",
   "dataset_version": "2026-10-25-r2",
   "engine_version": "0.1.0",
   "needs_summary": [
@@ -47,6 +47,7 @@
         "seats": 5,
         "boot_l": 366,
         "ground_clearance_mm": 195,
+        "battery_clearance_mm": null,
         "airbags": 6,
         "adaptive_suspension": "Not stated",
         "relative_label": "Strongest fit"
@@ -114,6 +115,7 @@
         "seats": 5,
         "boot_l": 240,
         "ground_clearance_mm": null,
+        "battery_clearance_mm": null,
         "airbags": 6,
         "adaptive_suspension": "Not stated",
         "relative_label": "Close second"
@@ -190,6 +192,7 @@
         "seats": 5,
         "boot_l": 240,
         "ground_clearance_mm": null,
+        "battery_clearance_mm": null,
         "airbags": 6,
         "adaptive_suspension": "Not stated"
       },

@@ -179,6 +179,31 @@ New optional Needs field: `city_highway` (default, changes nothing), `rough_road
 - `needs_summary` gains "Roads: ..." only when it is not `city_highway`. Cards carry `battery_clearance_mm` in `metrics`.
 - The describe box can fill it in (`/extract` reads `road_conditions`).
 
+## Guided intake: plain-language follow-ups (`/start`)
+
+`/start` is now a short conversation instead of the 9-field form. The old form moved to `/start/advanced`.
+`contracts/needs.schema.json` and `contracts/result.schema.json` are unchanged. See `docs/GUIDED_FLOW.md`.
+
+- **New contracts:** `questions.request.schema.json` and `questions.response.schema.json` (`POST /next_question`).
+- **The engine chooses the questions** (`engine/app/questions.py`, pure Python, no LLM). Budget, seats, daily km and
+  home charging are asked first, one at a time, in that order, skipping what is known. After that, an optional
+  question (roads, what matters most, long trips) is asked only if its possible answers would change the top 3
+  cars or the best match, at most 3, never twice.
+- **Question text, answer cards and helpers are fixed templates.** Each card carries the Needs fields it sets.
+  Situation answers never create `must_haves`. "Not sure" is stored as `unsure` (home charging) or nothing; it is
+  never yes or no. The apartment-with-own-spot card is `unsure` (the society may refuse).
+- **Results unlock** once budget, seats and daily km are answered. Home charging not yet answered is sent as `unsure`.
+  Budget, seats and daily km are never filled in for the buyer.
+- **Two helpers, assumptions shown, buyer confirms:** monthly EMI to budget (interest rate starts at 9% a year and is
+  editable; rounded down to 50,000; not a loan offer) and minutes to work to daily km (speed starts at 20 km/h and is
+  editable; there and back only). No estimate is shown until every assumption has a valid value.
+- **Home charging "unsure" now adds a note to `unknowns`:** costs already assumed a home charger for "unsure" (charger
+  shown as "assumed"); the Result now says so in words instead of leaving it implicit. See `docs/HOW_IT_WORKS.md` section 10
+  for every assumption in the project.
+- Typing in the first box uses the existing `/extract` (LLM call 1). With the LLM off, the same questions run as a stepper.
+
 ## Later
 
+- Guided intake: vague hints from `/extract` ("affordable", "family") to word the follow-up, a plain-words glossary on
+  the results page, and a Hindi interface.
 - Store watch-outs as codes in the data release instead of sentences, so the engine can filter them by context.

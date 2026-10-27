@@ -1,0 +1,58 @@
+{
+  "done": false,
+  "kind": "required",
+  "field": "budget_max_inr",
+  "question": "What is the most you want to spend on the car?",
+  "why": "So we never show a car you cannot afford.",
+  "example": "For example, 12 lakh.",
+  "cards": [
+    {
+      "id": "b10",
+      "label": "Up to 10 lakh",
+      "sublabel": null,
+      "patch": {
+        "budget_max_inr": 1000000
+      }
+    },
+    {
+      "id": "b15",
+      "label": "10 to 15 lakh",
+      "sublabel": "We will look up to 15 lakh",
+      "patch": {
+        "budget_max_inr": 1500000
+      }
+    },
+    {
+      "id": "b20",
+      "label": "15 to 20 lakh",
+      "sublabel": "We will look up to 20 lakh",
+      "patch": {
+        "budget_max_inr": 2000000
+      }
+    },
+    {
+      "id": "b30",
+      "label": "20 to 30 lakh",
+      "sublabel": "We will look up to 30 lakh",
+      "patch": {
+        "budget_max_inr": 3000000
+      }
+    },
+    {
+      "id": "b50",
+      "label": "More than 30 lakh",
+      "sublabel": "We will look up to 50 lakh",
+      "patch": {
+        "budget_max_inr": 5000000
+      }
+    }
+  ],
+  "helper": "budget_emi",
+  "can_show_results": false,
+  "missing_required": [
+    "budget_max_inr",
+    "seats_min",
+    "daily_km",
+    "home_charging"
+  ]
+}

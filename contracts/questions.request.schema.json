@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuestionsRequest",
+  "description": "POST /next_question: what we know so far about the buyer, and which optional questions were already asked. Returns the next easy follow-up, or says it is time to show results.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "needs"
+  ],
+  "properties": {
+    "needs": {
+      "description": "Needs fields known so far (any subset of contracts/needs.schema.json properties; each present field is checked against it).",
+      "type": "object"
+    },
+    "asked": {
+      "description": "Optional fields the buyer was already asked about (answered or skipped). They are never asked again.",
+      "type": "array",
+      "items": {
+        "enum": [
+          "road_conditions",
+          "priority",
+          "longest_regular_trip_km"
+        ]
+      },
+      "uniqueItems": true,
+      "default": []
+    }
+  }
+}

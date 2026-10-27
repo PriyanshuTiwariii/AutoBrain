@@ -80,3 +80,14 @@ for name, replies in EXTRACTS.items():
     payload = extract_needs("(not stored)", client=ScriptedModel(*replies), settings=settings, models_by_brand=by_brand)
     (out / f"{name}.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"wrote {name}.json ({payload['status']})")
+
+
+# --- /next_question responses: real engine output, for the website's tests ------------------------------------------
+from app.questions import next_question  # noqa: E402
+
+_FULL = {"budget_max_inr": 1_500_000, "seats_min": 4, "daily_km": 40, "home_charging": "yes"}
+for name, known in {"questions-budget": {}, "questions-optional": _FULL}.items():
+    (out / f"{name}.json").write_text(
+        json.dumps(next_question(known, [], ds.variants), indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
+    )
+    print(f"wrote {name}.json")

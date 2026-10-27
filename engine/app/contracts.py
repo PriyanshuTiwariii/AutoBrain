@@ -22,6 +22,11 @@ RESULT_SCHEMA = _load("result.schema.json")
 EXTRACT_REQUEST_SCHEMA = _load("extract.request.schema.json")
 EXTRACT_RESPONSE_SCHEMA = _load("extract.response.schema.json")
 
+QUESTIONS_REQUEST_SCHEMA = _load("questions.request.schema.json")
+QUESTIONS_RESPONSE_SCHEMA = _load("questions.response.schema.json")
+
+_questions_request_validator = Draft202012Validator(QUESTIONS_REQUEST_SCHEMA)
+_questions_response_validator = Draft202012Validator(QUESTIONS_RESPONSE_SCHEMA)
 _needs_validator = Draft202012Validator(NEEDS_SCHEMA)
 _result_validator = Draft202012Validator(RESULT_SCHEMA)
 _extract_request_validator = Draft202012Validator(EXTRACT_REQUEST_SCHEMA)
@@ -122,6 +127,27 @@ def extract_response_errors(payload: Any) -> list[str]:
     return [
         f"{'/'.join(str(p) for p in e.absolute_path) or '(root)'}: {e.message}"
         for e in sorted(_extract_response_validator.iter_errors(payload), key=lambda e: list(map(str, e.absolute_path)))
+    ]
+
+
+def questions_request_errors(body: Any) -> list[dict[str, str]]:
+    """Plain-English problems with a /next_question request body. Empty = valid."""
+    found = _plain_errors(_questions_request_validator, body)
+    if found or not isinstance(body, dict):
+        return found
+    for name, value in body["needs"].items():
+        if name not in _needs_field_validators:
+            found.append({"field": f"needs.{name}", "message": f'Unknown field "{name}"'})
+        elif not needs_field_is_valid(name, value):
+            found.append({"field": f"needs.{name}", "message": f"needs.{name} is not valid"})
+    return found
+
+
+def questions_response_errors(payload: Any) -> list[str]:
+    """Every problem with a /next_question response against its contract, for the log."""
+    return [
+        f"{'/'.join(str(p) for p in e.absolute_path) or '(root)'}: {e.message}"
+        for e in sorted(_questions_response_validator.iter_errors(payload), key=lambda e: list(map(str, e.absolute_path)))
     ]
 
 

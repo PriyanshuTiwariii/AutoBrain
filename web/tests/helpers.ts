@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import type { ExtractResponse, Result } from "@/lib/types";
+import type { ExtractResponse, QuestionResponse, Result } from "@/lib/types";
 
 export const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -14,9 +14,14 @@ export function extractFixture(name: "complete" | "missing-budget" | "partial" |
   return JSON.parse(readFileSync(path.join(__dirname, "fixtures", `extract-${name}.json`), "utf-8")) as ExtractResponse;
 }
 
+/** Real /next_question responses produced by the engine (see engine/scripts/make_web_fixtures.py). */
+export function questionFixture(name: "budget" | "optional"): QuestionResponse {
+  return JSON.parse(readFileSync(path.join(__dirname, "fixtures", `questions-${name}.json`), "utf-8")) as QuestionResponse;
+}
+
 export const FIXTURES = ["scenario-1", "scenario-3", "scenario-5", "scenario-6-nothing-qualifies"];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function contract(name: "needs" | "result" | "extract.request" | "extract.response"): any {
+export function contract(name: "needs" | "result" | "extract.request" | "extract.response" | "questions.request" | "questions.response"): any {
   return JSON.parse(readFileSync(path.join(REPO_ROOT, "contracts", `${name}.schema.json`), "utf-8"));
 }

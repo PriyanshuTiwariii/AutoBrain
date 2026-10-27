@@ -137,6 +137,34 @@ export interface ExtractResponse {
   message: string | null;
 }
 
+/** What is known about the buyer so far: any subset of the Needs fields (contracts/questions.request.schema.json). */
+export type PartialNeeds = Partial<NeedsInput>;
+
+export type OptionalField = "road_conditions" | "priority" | "longest_regular_trip_km";
+export type QuestionField = RequiredField | OptionalField;
+
+export interface QuestionCard {
+  id: string;
+  label: string;
+  sublabel: string | null;
+  /** Needs fields to set when the buyer taps the card. Empty for "Not sure" on an optional question. */
+  patch: PartialNeeds;
+}
+
+/** What the engine's /next_question returns (contracts/questions.response.schema.json). */
+export interface QuestionResponse {
+  done: boolean;
+  kind: "required" | "optional" | "none";
+  field: QuestionField | null;
+  question: string | null;
+  why: string | null;
+  example: string | null;
+  cards: QuestionCard[];
+  helper: "budget_emi" | "commute_minutes" | null;
+  can_show_results: boolean;
+  missing_required: RequiredField[];
+}
+
 /** A problem with one field, as the engine and the website's server route report it. */
 export interface FieldProblem {
   field: string;

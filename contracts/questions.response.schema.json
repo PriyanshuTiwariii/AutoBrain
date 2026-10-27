@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuestionsResponse",
+  "description": "POST /next_question: the next follow-up. Question text and cards are fixed templates, never written by an LLM. Each card carries a `patch`: the Needs fields to set when the buyer taps it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "done",
+    "kind",
+    "field",
+    "question",
+    "why",
+    "example",
+    "cards",
+    "helper",
+    "can_show_results",
+    "missing_required"
+  ],
+  "properties": {
+    "done": {
+      "type": "boolean",
+      "description": "True when nothing more needs asking: show the results."
+    },
+    "kind": {
+      "enum": [
+        "required",
+        "optional",
+        "none"
+      ],
+      "description": "required: a field the engine cannot work without. optional: asked only because the answer would change the shortlist. none: done."
+    },
+    "field": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "budget_max_inr",
+        "seats_min",
+        "daily_km",
+        "home_charging",
+        "road_conditions",
+        "priority",
+        "longest_regular_trip_km",
+        null
+      ]
+    },
+    "question": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "why": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "One plain sentence on why we ask."
+    },
+    "example": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "An example of a typed answer."
+    },
+    "cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "sublabel",
+          "patch"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "sublabel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "patch": {
+            "description": "Needs fields to set. May be empty (for example 'Not sure' on an optional question).",
+            "type": "object"
+          }
+        }
+      }
+    },
+    "helper": {
+      "enum": [
+        "budget_emi",
+        "commute_minutes",
+        null
+      ],
+      "description": "A small calculator the page can offer when the buyer does not know the number. Its assumptions are shown on screen and the buyer confirms the result."
+    },
+    "can_show_results": {
+      "type": "boolean",
+      "description": "True once budget, seats and daily km are known (home charging may be 'unsure')."
+    },
+    "missing_required": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "budget_max_inr",
+          "seats_min",
+          "daily_km",
+          "home_charging"
+        ]
+      }
+    }
+  }
+}

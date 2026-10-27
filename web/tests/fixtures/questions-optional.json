@@ -1,0 +1,61 @@
+{
+  "done": false,
+  "kind": "optional",
+  "field": "priority",
+  "question": "What worries you most about the car?",
+  "why": "So we put the cars that do best on that first.",
+  "example": "For example, keeping my family safe.",
+  "cards": [
+    {
+      "id": "p_safety",
+      "label": "Keeping my family safe",
+      "sublabel": null,
+      "patch": {
+        "priority": "safety"
+      }
+    },
+    {
+      "id": "p_cost",
+      "label": "Low running cost",
+      "sublabel": null,
+      "patch": {
+        "priority": "cost"
+      }
+    },
+    {
+      "id": "p_range",
+      "label": "Going far without charging",
+      "sublabel": null,
+      "patch": {
+        "priority": "range"
+      }
+    },
+    {
+      "id": "p_features",
+      "label": "A premium, feature-rich car",
+      "sublabel": null,
+      "patch": {
+        "priority": "features"
+      }
+    },
+    {
+      "id": "p_space",
+      "label": "Space and comfort",
+      "sublabel": null,
+      "patch": {
+        "priority": "space"
+      }
+    },
+    {
+      "id": "p_balanced",
+      "label": "A bit of everything",
+      "sublabel": null,
+      "patch": {
+        "priority": "balanced"
+      }
+    }
+  ],
+  "helper": null,
+  "can_show_results": true,
+  "missing_required": []
+}

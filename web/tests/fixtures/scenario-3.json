@@ -1,5 +1,5 @@
 {
-  "result_id": "8e23a92ccd618946",
+  "result_id": "8de0a0ab554d3998",
   "dataset_version": "2026-10-25-r2",
   "engine_version": "0.1.0",
   "needs_summary": [
@@ -48,6 +48,7 @@
         "seats": 7,
         "boot_l": 527,
         "ground_clearance_mm": 205,
+        "battery_clearance_mm": 222,
         "airbags": 6,
         "adaptive_suspension": "No",
         "relative_label": "Strongest fit"
@@ -113,6 +114,7 @@
         "seats": 7,
         "boot_l": 527,
         "ground_clearance_mm": 205,
+        "battery_clearance_mm": 222,
         "airbags": 6,
         "adaptive_suspension": "No"
       },

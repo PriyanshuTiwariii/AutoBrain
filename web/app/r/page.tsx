@@ -19,7 +19,7 @@ export default function ResultsPage() {
   const nav = (
     <>
       <Link
-        href="/start"
+        href="/start?edit=1"
         className="inline-flex min-h-11 items-center rounded-[10px] border border-[#4A5B66] px-4 py-2.5 text-sm font-semibold !text-white no-underline"
       >
         Edit my needs
