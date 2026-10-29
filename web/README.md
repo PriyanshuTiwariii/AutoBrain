@@ -4,11 +4,16 @@ Next.js 14 (App Router), TypeScript, Tailwind. Mobile-first: built for a 390px p
 
 | Page | What it does |
 | --- | --- |
-| `/` | One line and a Start button |
-| `/start` | "Describe what you need" box (optional), then the needs form: budget (lakh), seats, daily km, longest trip (optional), home charging, must-haves, nice-to-haves, priority |
+| `/` | Landing page with a Start button |
+| `/start` | "What kind of car?": electric, or petrol and diesel (not covered yet) |
+| `/start/ev` | "Find the right EV for me" or "Compare EVs I have shortlisted" |
+| `/find` | The guided questions: optional free text, then one easy question at a time, with editable answers. `/find/advanced` is the full form |
+| `/compare` | Pick two or three cars (brand, model, variant) and see them side by side, with where each one leads. The URL is shareable |
 | `/r` | The results page: every card the engine returns, watch-outs, price status labels, side-by-side table, disclaimer, "Download as PDF", feedback link |
-| `/api/recommend` | Server route. The form posts here; it calls the engine with the secret |
-| `/api/extract` | Server route for the Describe box; it calls the engine's `/extract` the same way |
+| `/api/recommend` | Server route. The finder posts the needs here; it calls the engine with the secret |
+| `/api/next-question` | Server route for the follow-up questions; it calls the engine's `/next_question` |
+| `/api/extract` | Server route for the free-text box; it calls the engine's `/extract` the same way |
+| `/api/cars`, `/api/compare` | Server routes for the comparison pickers and the comparison itself |
 
 ## How it fits together
 
