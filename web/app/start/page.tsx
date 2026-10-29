@@ -15,8 +15,8 @@ import type { ExtractResponse, FieldProblem, NeedsInput, OptionalField, PartialN
 
 const INPUT =
   "min-h-12 w-full rounded-xl border border-[#A9B6BF] bg-white px-3.5 py-2.5 text-base text-ink placeholder:text-[#7A8892] focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30";
-const PRIMARY = "min-h-12 rounded-xl bg-brand px-8 py-3.5 text-base font-extrabold text-white hover:bg-brand-dark disabled:opacity-60";
-const SECONDARY = "min-h-12 rounded-xl border border-brand bg-white px-6 py-3 text-base font-extrabold text-brand hover:bg-sky disabled:opacity-50";
+const PRIMARY = "btn btn-primary";
+const SECONDARY = "btn btn-secondary";
 
 const EXAMPLES = [
   "Family car for bad roads and daily office travel",
@@ -189,7 +189,7 @@ export default function StartPage() {
                     type="button"
                     onClick={() => forget(c.field)}
                     disabled={busy}
-                    className="min-h-8 rounded-full px-2.5 text-[13px] font-bold text-brand hover:bg-sky disabled:opacity-50"
+                    className="chip-btn min-h-8 rounded-full px-2.5 text-[13px] font-bold text-brand disabled:opacity-50"
                     aria-label={`Change ${c.label}`}
                   >
                     Change
@@ -220,14 +220,14 @@ export default function StartPage() {
                   key={e}
                   type="button"
                   onClick={() => setIntro(e)}
-                  className="min-h-10 rounded-full border border-line bg-surface px-3.5 py-2 text-left text-[13px] hover:bg-sky"
+                  className="chip-btn min-h-10 rounded-full border border-line bg-surface px-3.5 py-2 text-left text-[13px]"
                 >
                   {e}
                 </button>
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <button type="button" onClick={describe} disabled={busy || intro.trim() === ""} className={PRIMARY}>
+              <button type="button" onClick={describe} disabled={busy || intro.trim() === ""} aria-busy={busy} className={PRIMARY}>
                 {busy ? "Reading…" : "Continue"}
               </button>
               <button type="button" onClick={() => void advance(needs, asked)} disabled={busy} className={SECONDARY}>
@@ -261,7 +261,7 @@ export default function StartPage() {
                   type="button"
                   disabled={busy}
                   onClick={() => choose(card.patch)}
-                  className="flex min-h-14 flex-col justify-center rounded-xl border border-line bg-white px-4 py-3 text-left hover:border-brand hover:bg-sky disabled:opacity-60"
+                  className="choice-card flex min-h-14 flex-col justify-center rounded-xl border border-line bg-white px-4 py-3 text-left"
                 >
                   <span className="text-[16px] font-bold">{card.label}</span>
                   {card.sublabel ? <span className="text-[13px] text-muted">{card.sublabel}</span> : null}
@@ -297,7 +297,7 @@ export default function StartPage() {
                     if (e.key === "Enter") void answerTyped();
                   }}
                 />
-                <button type="button" onClick={answerTyped} disabled={busy || typed.trim() === ""} className={SECONDARY}>
+                <button type="button" onClick={answerTyped} disabled={busy || typed.trim() === ""} aria-busy={busy} className={SECONDARY}>
                   Send
                 </button>
               </div>
@@ -321,8 +321,8 @@ export default function StartPage() {
         ) : null}
 
         {started && question?.can_show_results ? (
-          <div className="mt-6 flex flex-col gap-2">
-            <button type="button" onClick={showShortlist} disabled={busy} className={finished ? PRIMARY : SECONDARY}>
+          <div className="sticky-cta mt-6 flex flex-col gap-2">
+            <button type="button" onClick={showShortlist} disabled={busy} aria-busy={busy} className={`${finished ? PRIMARY : SECONDARY} w-full shadow-lg`}>
               {busy ? "Finding your shortlist…" : finished ? "Show my shortlist" : "Skip the rest, show my shortlist now"}
             </button>
             {!finished && question.missing_required.length > 0 ? (

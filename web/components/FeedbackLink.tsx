@@ -34,7 +34,7 @@ export default function FeedbackLink({ result, visitId }: { result: Result; visi
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#A9B6BF] bg-white px-6 py-3.5 text-base font-bold !text-ink no-underline print:hidden"
+      className="btn btn-light print:hidden"
     >
       Tell us if this helped
     </a>

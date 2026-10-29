@@ -17,9 +17,10 @@ export default function Landing() {
           </p>
           <Link
             href="/start"
-            className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand px-8 py-3.5 text-base font-extrabold !text-white no-underline hover:bg-brand-dark"
+            className="btn btn-primary"
           >
             Start
+            <span aria-hidden="true" className="btn-arrow">→</span>
           </Link>
           <p className="m-0 text-[13px] text-muted">
             AutoBrain is independent of Tata and Mahindra. Prices are ex-showroom, as of the data release date.

@@ -70,7 +70,8 @@ export default function DescribeBox({ onApply }: { onApply: (response: ExtractRe
           type="button"
           onClick={describe}
           disabled={busy || text.trim() === ""}
-          className="min-h-12 rounded-xl border border-brand bg-white px-6 py-3 text-base font-extrabold text-brand hover:bg-sky disabled:opacity-50"
+          aria-busy={busy}
+          className="btn btn-secondary"
         >
           {busy ? "Reading…" : "Fill in the form for me"}
         </button>

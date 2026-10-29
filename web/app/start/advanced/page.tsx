@@ -302,7 +302,8 @@ export default function StartPage() {
           <button
             type="submit"
             disabled={busy}
-            className="min-h-12 rounded-xl bg-brand px-8 py-3.5 text-base font-extrabold text-white hover:bg-brand-dark disabled:opacity-60"
+            aria-busy={busy}
+            className="btn btn-primary"
           >
             {busy ? "Finding your shortlist…" : "Show my shortlist"}
           </button>

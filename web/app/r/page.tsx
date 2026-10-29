@@ -20,7 +20,7 @@ export default function ResultsPage() {
     <>
       <Link
         href="/start?edit=1"
-        className="inline-flex min-h-11 items-center rounded-[10px] border border-[#4A5B66] px-4 py-2.5 text-sm font-semibold !text-white no-underline"
+        className="btn btn-ghost !rounded-[10px]"
       >
         Edit my needs
       </Link>
@@ -39,7 +39,7 @@ export default function ResultsPage() {
         <main className="mx-auto flex max-w-[720px] flex-col items-start gap-5 px-5 py-16">
           <h1 className="m-0 text-2xl font-extrabold">No shortlist yet</h1>
           <p className="m-0 text-base text-muted">Tell us what you need and we&rsquo;ll build one.</p>
-          <Link href="/start" className="inline-flex min-h-12 items-center rounded-xl bg-brand px-6 py-3 font-extrabold !text-white no-underline">
+          <Link href="/start" className="btn btn-primary">
             Start
           </Link>
         </main>

@@ -6,7 +6,7 @@ import { lakhText } from "@/lib/extract";
 
 const INPUT =
   "min-h-12 w-full rounded-xl border border-[#A9B6BF] bg-white px-3.5 py-2.5 text-base text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30";
-const USE_BUTTON = "min-h-12 rounded-xl bg-brand px-6 py-3 text-base font-extrabold text-white hover:bg-brand-dark";
+const USE_BUTTON = "btn btn-primary";
 
 function number(text: string): number {
   return text.trim() === "" ? Number.NaN : Number(text.replace(/,/g, ""));

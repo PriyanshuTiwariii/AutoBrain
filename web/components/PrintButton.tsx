@@ -6,7 +6,7 @@ export default function PrintButton({ className }: { className?: string }) {
     <button
       type="button"
       onClick={() => window.print()}
-      className={className ?? "min-h-11 rounded-[10px] bg-white px-4 py-2.5 text-sm font-bold text-ink"}
+      className={className ?? "btn btn-light !min-h-11 !rounded-[10px] !px-4 !py-2.5 !text-sm !font-bold"}
     >
       Download as PDF
     </button>

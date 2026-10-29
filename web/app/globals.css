@@ -36,3 +36,67 @@ a:hover { color: #08445F; }
 .hero-photo-img { animation: hero-zoom 18s ease-in-out infinite alternate; }
 @keyframes hero-zoom { from { transform: scale(1); } to { transform: scale(1.08); } }
 @media (prefers-reduced-motion: reduce) { .hero-photo-img { animation: none; } }
+
+/* ---- Interactive polish: one set of button, card and logo behaviours for the whole site ---- */
+html { scroll-behavior: smooth; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, .btn, .choice-card, .chip-btn { touch-action: manipulation; }
+:focus-visible { outline: 2px solid #0B5F87; outline-offset: 2px; }
+::selection { background: #B8D7E6; }
+
+.btn {
+  @apply inline-flex min-h-12 cursor-pointer select-none items-center justify-center gap-2 rounded-xl py-3 text-base font-extrabold;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { cursor: not-allowed; opacity: 0.55; }
+.btn-primary { background: #0B5F87; color: #fff; padding-inline: 2rem; box-shadow: 0 1px 2px rgba(15, 27, 36, 0.15); }
+.btn-primary:hover:not(:disabled) { background: #08445F; box-shadow: 0 6px 16px rgba(11, 95, 135, 0.3); transform: translateY(-1px); }
+.btn-secondary { background: #fff; color: #0B5F87; border: 1px solid #0B5F87; padding-inline: 1.5rem; }
+.btn-secondary:hover:not(:disabled) { background: #E3F0F6; box-shadow: 0 4px 12px rgba(11, 95, 135, 0.15); transform: translateY(-1px); }
+.btn-light { background: #fff; color: #0F1B24; border: 1px solid #A9B6BF; padding-inline: 1.5rem; }
+.btn-light:hover:not(:disabled) { background: #F3F5F6; border-color: #4B5A66; transform: translateY(-1px); }
+.btn-ghost { color: #fff; border: 1px solid #4A5B66; padding-inline: 1rem; min-height: 2.75rem; font-size: 0.875rem; font-weight: 600; }
+.btn-ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); border-color: #B9C6CF; }
+a.btn, a.btn:hover { text-decoration: none; }
+a.btn-primary, a.btn-primary:hover, a.btn-ghost, a.btn-ghost:hover { color: #fff; }
+a.btn-secondary, a.btn-secondary:hover { color: #0B5F87; }
+a.btn-light, a.btn-light:hover { color: #0F1B24; }
+
+/* A button that is working: a spinner appears before its label (set aria-busy) */
+.btn[aria-busy="true"]::before {
+  content: ""; width: 1rem; height: 1rem; border-radius: 9999px;
+  border: 2px solid currentColor; border-right-color: transparent; animation: btn-spin 0.7s linear infinite;
+}
+.btn[aria-busy="true"] { cursor: progress; }
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+
+/* An arrow that slides forward on hover */
+.btn-arrow { display: inline-block; transition: transform 0.2s ease; }
+.btn:hover .btn-arrow { transform: translateX(4px); }
+
+/* Tappable answer cards and chips */
+.choice-card, .chip-btn { transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease; }
+.choice-card:hover:not(:disabled) { border-color: #0B5F87; background: #E3F0F6; box-shadow: 0 6px 16px rgba(11, 95, 135, 0.15); transform: translateY(-2px); }
+.choice-card:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
+.choice-card:disabled { cursor: not-allowed; opacity: 0.6; }
+.chip-btn:hover:not(:disabled) { background: #E3F0F6; border-color: #0B5F87; }
+.chip-btn:active:not(:disabled) { transform: scale(0.97); }
+
+/* The AutoBrain logo: the bolt tilts and glows, and the whole logo presses in */
+.logo { transition: transform 0.15s ease, opacity 0.15s ease; border-radius: 0.5rem; }
+.logo:active { transform: scale(0.97); }
+.logo-mark { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.logo:hover .logo-mark, .logo:focus-visible .logo-mark { transform: rotate(-10deg) scale(1.1); box-shadow: 0 0 0 4px rgba(27, 127, 174, 0.35), 0 0 18px rgba(27, 127, 174, 0.6); }
+.logo:focus-visible { outline-color: #fff; }
+
+/* Phone: the main action stays within thumb reach while scrolling */
+.sticky-cta { position: sticky; bottom: 0.75rem; z-index: 10; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .btn, .choice-card, .chip-btn, .logo, .logo-mark, .btn-arrow { transition: none; }
+  .btn:hover, .choice-card:hover, .btn:active, .choice-card:active, .logo:hover .logo-mark { transform: none; }
+  .btn[aria-busy="true"]::before { animation-duration: 1.6s; }
+}
+@media print { .btn, .sticky-cta { box-shadow: none; position: static; } }
