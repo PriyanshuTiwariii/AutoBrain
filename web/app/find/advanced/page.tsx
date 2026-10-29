@@ -161,7 +161,7 @@ export default function StartPage() {
     <>
       <Header />
       <main className="mx-auto max-w-[720px] px-5 pb-20 pt-8 md:px-8 md:pt-12">
-        <Link href="/start" className="mb-4 inline-block text-[15px] font-bold">
+        <Link href="/find" className="mb-4 inline-block text-[15px] font-bold">
           ← Back to the simple questions
         </Link>
         <h1 className="m-0 mb-2 text-[28px] font-extrabold tracking-tight md:text-4xl">All options</h1>

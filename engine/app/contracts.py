@@ -22,9 +22,15 @@ RESULT_SCHEMA = _load("result.schema.json")
 EXTRACT_REQUEST_SCHEMA = _load("extract.request.schema.json")
 EXTRACT_RESPONSE_SCHEMA = _load("extract.response.schema.json")
 
+COMPARE_REQUEST_SCHEMA = _load("compare.request.schema.json")
+COMPARE_RESPONSE_SCHEMA = _load("compare.response.schema.json")
+CARS_RESPONSE_SCHEMA = _load("cars.response.schema.json")
 QUESTIONS_REQUEST_SCHEMA = _load("questions.request.schema.json")
 QUESTIONS_RESPONSE_SCHEMA = _load("questions.response.schema.json")
 
+_compare_request_validator = Draft202012Validator(COMPARE_REQUEST_SCHEMA)
+_compare_response_validator = Draft202012Validator(COMPARE_RESPONSE_SCHEMA)
+_cars_response_validator = Draft202012Validator(CARS_RESPONSE_SCHEMA)
 _questions_request_validator = Draft202012Validator(QUESTIONS_REQUEST_SCHEMA)
 _questions_response_validator = Draft202012Validator(QUESTIONS_RESPONSE_SCHEMA)
 _needs_validator = Draft202012Validator(NEEDS_SCHEMA)
@@ -128,6 +134,28 @@ def extract_response_errors(payload: Any) -> list[str]:
         f"{'/'.join(str(p) for p in e.absolute_path) or '(root)'}: {e.message}"
         for e in sorted(_extract_response_validator.iter_errors(payload), key=lambda e: list(map(str, e.absolute_path)))
     ]
+
+
+def compare_request_errors(body: Any) -> list[dict[str, str]]:
+    """Plain-English problems with a /compare request body. Empty = valid."""
+    return _plain_errors(_compare_request_validator, body)
+
+
+def _log_errors(validator: Draft202012Validator, payload: Any) -> list[str]:
+    return [
+        f"{'/'.join(str(p) for p in e.absolute_path) or '(root)'}: {e.message}"
+        for e in sorted(validator.iter_errors(payload), key=lambda e: list(map(str, e.absolute_path)))
+    ]
+
+
+def compare_response_errors(payload: Any) -> list[str]:
+    """Every problem with a /compare response against its contract, for the log."""
+    return _log_errors(_compare_response_validator, payload)
+
+
+def cars_response_errors(payload: Any) -> list[str]:
+    """Every problem with a /cars response against its contract, for the log."""
+    return _log_errors(_cars_response_validator, payload)
 
 
 def questions_request_errors(body: Any) -> list[dict[str, str]]:

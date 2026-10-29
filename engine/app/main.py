@@ -16,10 +16,13 @@ from fastapi.security import APIKeyHeader
 
 from . import config
 from .contracts import (
-    EXTRACT_REQUEST_SCHEMA, EXTRACT_RESPONSE_SCHEMA, NEEDS_SCHEMA, QUESTIONS_REQUEST_SCHEMA,
-    QUESTIONS_RESPONSE_SCHEMA, RESULT_SCHEMA, extract_request_errors, extract_response_errors, needs_errors,
-    questions_request_errors, questions_response_errors, result_errors, schema_for_docs,
+    CARS_RESPONSE_SCHEMA, COMPARE_REQUEST_SCHEMA, COMPARE_RESPONSE_SCHEMA, EXTRACT_REQUEST_SCHEMA,
+    EXTRACT_RESPONSE_SCHEMA, NEEDS_SCHEMA, QUESTIONS_REQUEST_SCHEMA, QUESTIONS_RESPONSE_SCHEMA, RESULT_SCHEMA,
+    cars_response_errors, compare_request_errors, compare_response_errors, extract_request_errors,
+    extract_response_errors, needs_errors, questions_request_errors, questions_response_errors, result_errors,
+    schema_for_docs,
 )
+from .compare import UnknownCars, compare_cars, list_cars
 from .dataset import Dataset, load_dataset
 from .extract import extract_needs
 from .llm import LLMClient, LLMSettings, build_client
@@ -344,6 +347,72 @@ def create_app(
         invalid = questions_response_errors(payload)
         if invalid:
             logger.error("Question response failed questions.response.schema.json: %s", "; ".join(invalid))
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "The engine produced an invalid response. This has been logged; nothing was returned."},
+            )
+        return JSONResponse(content=payload)
+
+    @app.get(
+        "/cars",
+        responses={
+            200: {
+                "description": "Every variant in the newest release (contracts/cars.response.schema.json)",
+                "content": {"application/json": {"schema": schema_for_docs(CARS_RESPONSE_SCHEMA)}},
+            },
+            401: {"description": "Missing or wrong X-Engine-Secret header"},
+        },
+        dependencies=[Depends(require_secret)],
+        summary="The cars in the data release, for the comparison pickers",
+    )
+    def cars(request: Request):
+        ds: Dataset = request.app.state.dataset
+        payload = list_cars(ds.variants, ds.version)
+        invalid = cars_response_errors(payload)
+        if invalid:
+            logger.error("Cars response failed cars.response.schema.json: %s", "; ".join(invalid))
+            return JSONResponse(status_code=500, content={"detail": "The engine produced an invalid response. This has been logged."})
+        return JSONResponse(content=payload)
+
+    @app.post(
+        "/compare",
+        openapi_extra={
+            "requestBody": {
+                "required": True,
+                "content": {"application/json": {"schema": schema_for_docs(COMPARE_REQUEST_SCHEMA)}},
+            },
+        },
+        responses={
+            200: {
+                "description": "Two or three cars side by side (contracts/compare.response.schema.json)",
+                "content": {"application/json": {"schema": schema_for_docs(COMPARE_RESPONSE_SCHEMA)}},
+            },
+            401: {"description": "Missing or wrong X-Engine-Secret header"},
+            422: {"description": "The request is not valid, or a car is not in the data release"},
+        },
+        dependencies=[Depends(require_secret)],
+        summary="Variant keys in, side-by-side facts and fair category winners out (pure engine, no LLM)",
+    )
+    async def compare(request: Request):
+        ds: Dataset = request.app.state.dataset
+        body, bad = _parse_json_body(await request.body())
+        if bad is not None:
+            return bad
+        problems = compare_request_errors(body)
+        if problems:
+            return JSONResponse(status_code=422, content={"detail": problems})
+        try:
+            payload = compare_cars(body["variant_keys"], ds.variants, ds.version)
+        except UnknownCars as exc:
+            return JSONResponse(status_code=422, content={"detail": [
+                {"field": f"variant_keys[{i}]", "message": f"variant_keys[{i}] is not a car in our data"} for i in exc.indexes
+            ]})
+        except Exception:
+            logger.exception("Engine failed to build a comparison (release %s)", ds.version)
+            return JSONResponse(status_code=500, content={"detail": "The engine failed to build the comparison. This has been logged."})
+        invalid = compare_response_errors(payload)
+        if invalid:
+            logger.error("Comparison failed compare.response.schema.json: %s", "; ".join(invalid))
             return JSONResponse(
                 status_code=500,
                 content={"detail": "The engine produced an invalid response. This has been logged; nothing was returned."},

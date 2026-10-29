@@ -1,0 +1,483 @@
+{
+  "dataset_version": "2026-10-25-r2",
+  "cars": [
+    {
+      "variant_key": "MAHINDRA-BE6SPORTEQ-FE-79-BAAS",
+      "name": "BE 6 SPORTEQ FE 79 kWh BaaS",
+      "brand": "Mahindra",
+      "model": "BE 6 SPORTEQ",
+      "variant": "FE 79 kWh BaaS",
+      "body_type": "SUV",
+      "pricing_type": "BaaS",
+      "price_status": "verified"
+    },
+    {
+      "variant_key": "MAHINDRA-BE6SPORTEQ-FE-79",
+      "name": "BE 6 SPORTEQ FE 79 kWh",
+      "brand": "Mahindra",
+      "model": "BE 6 SPORTEQ",
+      "variant": "FE 79 kWh",
+      "body_type": "SUV",
+      "pricing_type": "battery included",
+      "price_status": "corroborated"
+    }
+  ],
+  "winners": [
+    {
+      "category": "price",
+      "label": "Lowest price",
+      "variant_key": null,
+      "text": "Some of these cars are sold with battery rental (BaaS) and some with the battery included. Their prices are not the same thing, so we do not compare them."
+    },
+    {
+      "category": "cost_5yr",
+      "label": "Lowest 5-year cost",
+      "variant_key": null,
+      "text": "A 5-year cost is never worked out for battery-rental (BaaS) cars, so it is not compared."
+    },
+    {
+      "category": "range",
+      "label": "Longest range",
+      "variant_key": null,
+      "text": "BE 6 SPORTEQ FE 79 kWh BaaS and BE 6 SPORTEQ FE 79 kWh are level, so there is no single leader."
+    },
+    {
+      "category": "efficiency",
+      "label": "Most efficient",
+      "variant_key": null,
+      "text": "BE 6 SPORTEQ FE 79 kWh BaaS and BE 6 SPORTEQ FE 79 kWh are level, so there is no single leader."
+    },
+    {
+      "category": "safety",
+      "label": "Highest crash-test score",
+      "variant_key": null,
+      "text": "BE 6 SPORTEQ FE 79 kWh BaaS and BE 6 SPORTEQ FE 79 kWh are level, so there is no single leader."
+    },
+    {
+      "category": "dc_charging",
+      "label": "Fastest DC charging",
+      "variant_key": null,
+      "text": "BE 6 SPORTEQ FE 79 kWh BaaS and BE 6 SPORTEQ FE 79 kWh are level, so there is no single leader."
+    },
+    {
+      "category": "boot",
+      "label": "Biggest boot",
+      "variant_key": null,
+      "text": "BE 6 SPORTEQ FE 79 kWh BaaS and BE 6 SPORTEQ FE 79 kWh are level, so there is no single leader."
+    },
+    {
+      "category": "seats",
+      "label": "Most seats",
+      "variant_key": null,
+      "text": "BE 6 SPORTEQ FE 79 kWh BaaS and BE 6 SPORTEQ FE 79 kWh are level, so there is no single leader."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Price and cost",
+      "rows": [
+        {
+          "key": "price",
+          "label": "Price (ex-showroom)",
+          "cells": [
+            {
+              "text": "₹14.45 lakh (verified); battery rented separately",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "₹24.45 lakh (corroborated)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "pricing_type",
+          "label": "How the battery is sold",
+          "cells": [
+            {
+              "text": "Battery rental (BaaS): price excludes the battery",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Battery included",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "cost_5yr",
+          "label": "5-year cost to own",
+          "cells": [
+            {
+              "text": "Not calculated for battery rental",
+              "state": "not_stated",
+              "best": false
+            },
+            {
+              "text": "~₹26.26 lakh (default assumptions)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "running_cost",
+          "label": "Running cost per km",
+          "cells": [
+            {
+              "text": "₹1.65/km",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "₹1.65/km",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "charger",
+          "label": "Home wall charger",
+          "cells": [
+            {
+              "text": "Not in the price, about ₹60,000 extra",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Not in the price, about ₹60,000 extra",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Range and charging",
+      "rows": [
+        {
+          "key": "range",
+          "label": "Range",
+          "cells": [
+            {
+              "text": "449 km (tested on an earlier version)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "449 km (tested on an earlier version)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "efficiency",
+          "label": "Efficiency",
+          "cells": [
+            {
+              "text": "5.68 km/kWh (tested on an earlier version)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "5.68 km/kWh (tested on an earlier version)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "battery",
+          "label": "Battery size",
+          "cells": [
+            {
+              "text": "79 kWh",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "79 kWh",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "dc",
+          "label": "DC fast charging",
+          "cells": [
+            {
+              "text": "142.2 kW avg, about 7 min to add 100 km",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "142.2 kW avg, about 7 min to add 100 km",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "warranty",
+          "label": "Battery warranty",
+          "cells": [
+            {
+              "text": "Lifetime (1st owner)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Lifetime (1st owner)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Safety",
+      "rows": [
+        {
+          "key": "ncap",
+          "label": "Crash test (adult)",
+          "cells": [
+            {
+              "text": "31.97/32 adult (Bharat NCAP, may not cover this version)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "31.97/32 adult (Bharat NCAP, may not cover this version)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "airbags",
+          "label": "Airbags",
+          "cells": [
+            {
+              "text": "6",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "6",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "esp",
+          "label": "Stability control (ESP)",
+          "cells": [
+            {
+              "text": "Yes",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Yes",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "adas",
+          "label": "Driver assistance (ADAS)",
+          "cells": [
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "camera",
+          "label": "Parking camera",
+          "cells": [
+            {
+              "text": "540 degree camera",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "540 degree camera",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Comfort and features",
+      "rows": [
+        {
+          "key": "sunroof",
+          "label": "Sunroof",
+          "cells": [
+            {
+              "text": "Panoramic",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Panoramic",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "ventilated",
+          "label": "Ventilated front seats",
+          "cells": [
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "adaptive",
+          "label": "Adaptive suspension",
+          "cells": [
+            {
+              "text": "Yes",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Yes",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "drive",
+          "label": "Drive",
+          "cells": [
+            {
+              "text": "RWD",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "RWD",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Space and ground",
+      "rows": [
+        {
+          "key": "seats",
+          "label": "Seats",
+          "cells": [
+            {
+              "text": "5",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "5",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "boot",
+          "label": "Boot",
+          "cells": [
+            {
+              "text": "455 L",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "455 L",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "clearance",
+          "label": "Ground clearance",
+          "cells": [
+            {
+              "text": "207 mm",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "207 mm",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "We do not pick an overall winner. The right car depends on what matters to you; these are the facts and where each car leads.",
+    "Running cost and 5-year cost use our default assumptions (charging mostly at home at about ₹9.4 per kWh, 40 km a day for 5 years). They exclude insurance, registration, service, resale and offers. Your own numbers will differ.",
+    "Cars sold with battery rental (BaaS) have a price that excludes the battery, which is rented separately. We never compare that price with one that includes the battery.",
+    "Where a range or efficiency figure says 'tested on an earlier version', the test was on the car before an update; confirm before buying."
+  ],
+  "watch_outs": [
+    {
+      "variant_key": "MAHINDRA-BE6SPORTEQ-FE-79-BAAS",
+      "items": [
+        "Crash rating may not cover this version",
+        "Range/efficiency test was on an earlier version of this car",
+        "Tested range only 63% of claim",
+        "BaaS: battery paid via separate loan (up to 8 yrs)",
+        "not pay-per-km"
+      ]
+    },
+    {
+      "variant_key": "MAHINDRA-BE6SPORTEQ-FE-79",
+      "items": [
+        "Crash rating may not cover this version",
+        "Range/efficiency test was on an earlier version of this car",
+        "Tested range only 63% of claim",
+        "Wall charger not in price (~₹60,000)",
+        "Price corroborated, confirm before buying"
+      ]
+    }
+  ],
+  "disclaimer": "This recommendation is based on publicly available data as of the dataset release date. Prices are ex-showroom and exclude registration, insurance, offers and financing. Verify all details with the dealer before purchasing."
+}

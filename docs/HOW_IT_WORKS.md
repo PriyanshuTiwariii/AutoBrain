@@ -10,7 +10,7 @@ Buyer  ->  Own words + easy follow-up questions (or the full form)  ->  Needs  -
                   (AI optional, only reads text)                        (JSON)   (plain Python)  (JSON)
 ```
 
-The buyer is not expected to know car terms. They describe their life ("family of four, bad roads, office 15 km away"), and the system asks a few easy questions until it has the four things the engine cannot work without. Section 9 explains this, section 10 lists every assumption, and section 11 walks one buyer through the whole thing.
+The buyer is not expected to know car terms. They describe their life ("family of four, bad roads, office 15 km away"), and the system asks a few easy questions until it has the four things the engine cannot work without. Section 9 explains this, section 10 lists every assumption, section 11 walks one buyer through the whole thing, and section 13 covers the first screens and the car comparison.
 
 - **Data:** every car fact comes from one place, the newest folder in `data/releases/` (87 variants, built from the master spreadsheet). Nothing is guessed, scraped or invented. At startup the engine checks the files (columns, allowed values, checksums) and refuses to start if they are wrong.
 - **Engine:** the same input always gives the same output. There is no AI inside it.
@@ -35,7 +35,7 @@ The buyer is not expected to know car terms. They describe their life ("family o
 
 Features available as must-have or nice-to-have: ADAS, 360 camera, sunroof, ventilated seats, ESP, all-wheel drive, 7 seats, lifetime battery warranty, crash-tested, charger included, adaptive suspension.
 
-**How the buyer gives these (guided intake).** The main page, `/start`, does not show this table as a form. It asks life questions and turns the answers into these fields (section 9). The old full form is still at `/start/advanced` for people who know cars.
+**How the buyer gives these (guided intake).** The finder page, `/find`, does not show this table as a form. It asks life questions and turns the answers into these fields (section 9). The old full form is still at `/find/advanced` for people who know cars.
 
 **The "describe what you need" box (AI call 1).** The buyer can type in their own words (English, Hindi or Hinglish). The AI only fills the form. The buyer sees every field and can change it before pressing the button. The text is treated as data, never as instructions. Every value is checked against the contract and anything invalid is dropped.
 
@@ -134,8 +134,8 @@ If the AI is off or fails, the form and the template sentences give the same rec
 | --- | --- |
 | `data/` | Master spreadsheet, the script that builds releases, and the release CSVs |
 | `contracts/` | JSON schemas for input and output |
-| `engine/app/` | The engine: `eligibility.py`, `scoring.py`, `terrain.py`, `slots.py`, `costs.py`, `nomatch.py`, `extract.py`, `questions.py` (which follow-up to ask) |
-| `web/` | The website: guided questions at `/start`, full form at `/start/advanced`, results at `/r`, PDF download and feedback link |
+| `engine/app/` | The engine: `eligibility.py`, `scoring.py`, `terrain.py`, `slots.py`, `costs.py`, `nomatch.py`, `extract.py`, `questions.py` (which follow-up to ask), `compare.py` (side-by-side comparison) |
+| `web/` | The website: electric-or-not at `/start`, find or compare at `/start/ev`, guided questions at `/find`, full form at `/find/advanced`, comparison at `/compare`, results at `/r`, PDF download and feedback link |
 | `docs/GUIDED_FLOW.md` | Short technical note on the guided intake |
 | `CHANGES.md` | The most up-to-date decisions (wins over other docs) |
 
@@ -216,7 +216,7 @@ These are choices we made, not facts. All are shown to the buyer where they matt
 
 Meet Rohan, 24, first job, flat with street parking, office 15 km away, has never bought a car.
 
-1. He opens `/start` and types: "Need a family car for bad roads, office is 15 km away. Budget around 12 lakh."
+1. He opens the site, chooses Electric car and then "Find the right EV for me" (`/find`), and types: "Need a family car for bad roads, office is 15 km away. Budget around 12 lakh."
 2. The AI (call 1) reads it. The engine validates every field and keeps only what is allowed: budget 12 lakh, roads rough, daily km 30 (15 km each way, doubled by our code). "Family" gives no number, so seats stay empty.
 3. `/next_question` sees seats are missing and asks "Who rides with you on most days?" He taps "A small family" (4 seats).
 4. Next it asks "Where will the car sleep at night?" He taps "Shared or street parking" (no home charging).
@@ -232,6 +232,45 @@ Meet Rohan, 24, first job, flat with street parking, office 15 km away, has neve
 - **The data:** one release of 87 variants, built from a master spreadsheet with sources. Nothing is guessed or scraped.
 - **The brain:** a plain Python engine. Same input, same output, no AI. It has three layers: can the car qualify (pass, fail or unknown), how well does it fit (score), and how much can we trust the data (confidence).
 - **The AI's job:** read the buyer's own words, and reword one car's facts. It never picks a car and never supplies a number. Switch it off and everything still works.
-- **The new part:** instead of a spec form, a short conversation. The engine, not the AI, decides which question is worth asking, by checking whether the answer would change the shortlist.
+- **The new parts:** instead of a spec form, a short conversation; and a side-by-side comparison of two or three cars, with fair category winners and no overall winner. The first screens ask electric or not, then find or compare. The conversation: The engine, not the AI, decides which question is worth asking, by checking whether the answer would change the shortlist.
 - **Honesty:** unknown stays unknown, every estimate shows its assumptions, and the page says plainly what we could not confirm.
 - **What is still a guess:** the 9% loan rate, the 20 km/h commute speed, and the 1.5 "worth asking" threshold. Each is visible and adjustable, and the threshold needs testing with real buyers.
+
+## 13. The product flow, and comparing cars
+
+**The screens**
+
+```
+Home  ->  /start  "What kind of car?"
+            |-- Petrol or diesel: a plain "not covered yet" note (no dead end: it points to electric)
+            '-- Electric  ->  /start/ev  "What would you like to do?"
+                                |-- Find the right EV for me   -> /find     (the guided questions, section 9)
+                                '-- Compare EVs I have shortlisted -> /compare
+```
+
+The results page also has a "Compare these cars" button that opens the comparison with the shortlisted cars already chosen, and "Edit my needs" goes back to `/find`. The full form for people who know cars is at `/find/advanced`.
+
+**How the comparison works** (`engine/app/compare.py`, plain Python, no AI)
+
+1. The buyer picks two or three cars with dropdowns: brand, then model, then variant. The list comes from the data release (`GET /cars`), so only cars in our data can be compared and nothing is typed in. Battery-rental (BaaS) versions are hidden unless the buyer ticks a box.
+2. `POST /compare` reads those cars from the release and returns: a side-by-side table (price and cost, range and charging, safety, features, space), where each car leads, the watch-outs for every car, and notes.
+3. Every cell is read from the data. Blank or "Not stated" shows as "Not stated by maker". Price status, efficiency basis and crash-test status sit next to their numbers, exactly as on the shortlist cards.
+4. The link in the address bar (`/compare?cars=a,b`) can be shared, and reloading it shows the same comparison.
+
+**Category winners follow fixed rules, and are withheld when the figures are not like for like**
+
+| Category | Rule |
+| --- | --- |
+| Lowest price | Cheapest confirmed price among cars sold the same way. A battery-rental price is never compared with a battery-included price. A price that is not confirmed never wins. |
+| Lowest 5-year cost | Lowest default 5-year cost. Never worked out for battery-rental cars, so withheld if any is included. |
+| Longest range | Tested range against tested range, or maker real-world figure against maker figure, never across. A car on the other kind of figure is left out and named. |
+| Most efficient | Same rule: an independent test is never compared with a maker estimate. |
+| Highest crash-test score | Bharat NCAP adult score, only for rated cars. A car with no rating is not marked worse; it is named as having no rating. If only one car is rated, there is no winner. A "may not cover this version" rating is flagged. |
+| Fastest DC charging, biggest boot, most seats | Highest stated figure. A car with no stated figure is left out, not counted as worst. |
+| Any tie | No winner; the page says they are level. |
+
+There is **no overall winner**, on purpose: the right car depends on what matters to the buyer, and a made-up overall score would be less honest than the facts.
+
+Cost figures on the comparison use our default assumptions (charging mostly at home, about 40 km a day for 5 years) and exclude insurance, registration, service, resale and offers. The page says so.
+
+**Where it lives:** engine `compare.py` and the routes in `main.py`; contracts `compare.request`, `compare.response` and `cars.response` schemas; web `app/compare/page.tsx`, `components/CompareView.tsx`, `lib/compare.ts` and the `/api/cars` and `/api/compare` routes.

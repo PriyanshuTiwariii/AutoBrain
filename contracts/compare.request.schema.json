@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CompareRequest",
+  "description": "POST /compare: the cars to put side by side. Keys come from GET /cars.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "variant_keys"
+  ],
+  "properties": {
+    "variant_keys": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "minItems": 2,
+      "maxItems": 3,
+      "uniqueItems": true
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CarsResponse",
+  "description": "GET /cars: every variant in the newest data release, for the comparison pickers. Nothing here is typed in by a buyer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "dataset_version",
+    "cars"
+  ],
+  "properties": {
+    "dataset_version": {
+      "type": "string"
+    },
+    "cars": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "variant_key",
+          "brand",
+          "model",
+          "variant",
+          "body_type",
+          "pricing_type",
+          "price_inr",
+          "price_status"
+        ],
+        "properties": {
+          "variant_key": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string"
+          },
+          "body_type": {
+            "type": "string"
+          },
+          "pricing_type": {
+            "enum": [
+              "battery included",
+              "BaaS"
+            ]
+          },
+          "price_inr": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "price_status": {
+            "enum": [
+              "verified",
+              "corroborated",
+              "pending"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

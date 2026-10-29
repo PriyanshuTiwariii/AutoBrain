@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CompareResponse",
+  "description": "POST /compare: two or three cars side by side. Every cell is read from the data release (blank or 'Not stated' is shown as 'Not stated by maker'). Category winners follow fixed rules and are withheld when the figures are not like for like.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "dataset_version",
+    "cars",
+    "winners",
+    "sections",
+    "notes",
+    "watch_outs",
+    "disclaimer"
+  ],
+  "properties": {
+    "dataset_version": {
+      "type": "string"
+    },
+    "cars": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "variant_key",
+          "name",
+          "brand",
+          "model",
+          "variant",
+          "body_type",
+          "pricing_type",
+          "price_status"
+        ],
+        "properties": {
+          "variant_key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string"
+          },
+          "body_type": {
+            "type": "string"
+          },
+          "pricing_type": {
+            "enum": [
+              "battery included",
+              "BaaS"
+            ]
+          },
+          "price_status": {
+            "enum": [
+              "verified",
+              "corroborated",
+              "pending"
+            ]
+          }
+        }
+      }
+    },
+    "winners": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "label",
+          "variant_key",
+          "text"
+        ],
+        "properties": {
+          "category": {
+            "enum": [
+              "price",
+              "cost_5yr",
+              "range",
+              "efficiency",
+              "safety",
+              "dc_charging",
+              "boot",
+              "seats"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "variant_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The winning car, or null when there is no fair winner (a tie, or figures that are not like for like). `text` says why."
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "rows"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "key",
+                "label",
+                "cells"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "cells": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "text",
+                      "state",
+                      "best"
+                    ],
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "enum": [
+                          "stated",
+                          "not_stated"
+                        ]
+                      },
+                      "best": {
+                        "type": "boolean",
+                        "description": "True when this cell holds the fair winner for its row."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "watch_outs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "variant_key",
+          "items"
+        ],
+        "properties": {
+          "variant_key": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "disclaimer": {
+      "type": "string"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import type { ExtractResponse, QuestionResponse, Result } from "@/lib/types";
+import type { CompareResponse, ExtractResponse, QuestionResponse, Result } from "@/lib/types";
 
 export const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -19,9 +19,14 @@ export function questionFixture(name: "budget" | "optional"): QuestionResponse {
   return JSON.parse(readFileSync(path.join(__dirname, "fixtures", `questions-${name}.json`), "utf-8")) as QuestionResponse;
 }
 
+/** Real /compare responses produced by the engine (see engine/scripts/make_web_fixtures.py). */
+export function compareFixture(name: "three" | "baas"): CompareResponse {
+  return JSON.parse(readFileSync(path.join(__dirname, "fixtures", `compare-${name}.json`), "utf-8")) as CompareResponse;
+}
+
 export const FIXTURES = ["scenario-1", "scenario-3", "scenario-5", "scenario-6-nothing-qualifies"];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function contract(name: "needs" | "result" | "extract.request" | "extract.response" | "questions.request" | "questions.response"): any {
+export function contract(name: "needs" | "result" | "extract.request" | "extract.response" | "questions.request" | "questions.response" | "compare.request" | "compare.response" | "cars.response"): any {
   return JSON.parse(readFileSync(path.join(REPO_ROOT, "contracts", `${name}.schema.json`), "utf-8"));
 }

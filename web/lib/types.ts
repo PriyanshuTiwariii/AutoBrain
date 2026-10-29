@@ -170,3 +170,61 @@ export interface FieldProblem {
   field: string;
   message: string;
 }
+
+/** One car in the picker (contracts/cars.response.schema.json). */
+export interface CarOption {
+  variant_key: string;
+  brand: string;
+  model: string;
+  variant: string;
+  body_type: string;
+  pricing_type: "battery included" | "BaaS";
+  price_inr: number | null;
+  price_status: PriceStatus;
+}
+
+export interface CarsResponse {
+  dataset_version: string;
+  cars: CarOption[];
+}
+
+/** What /compare returns (contracts/compare.response.schema.json). Every figure is the engine's. */
+export interface CompareCell {
+  text: string;
+  state: "stated" | "not_stated";
+  best: boolean;
+}
+
+export interface CompareRow {
+  key: string;
+  label: string;
+  cells: CompareCell[];
+}
+
+export interface CompareWinner {
+  category: string;
+  label: string;
+  variant_key: string | null;
+  text: string;
+}
+
+export interface CompareCar {
+  variant_key: string;
+  name: string;
+  brand: string;
+  model: string;
+  variant: string;
+  body_type: string;
+  pricing_type: "battery included" | "BaaS";
+  price_status: PriceStatus;
+}
+
+export interface CompareResponse {
+  dataset_version: string;
+  cars: CompareCar[];
+  winners: CompareWinner[];
+  sections: { title: string; rows: CompareRow[] }[];
+  notes: string[];
+  watch_outs: { variant_key: string; items: string[] }[];
+  disclaimer: string;
+}

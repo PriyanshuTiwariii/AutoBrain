@@ -1,0 +1,599 @@
+{
+  "dataset_version": "2026-10-25-r2",
+  "cars": [
+    {
+      "variant_key": "TATA-PUNCHEV-ADVENTURE40-40",
+      "name": "Punch.ev Adventure 40",
+      "brand": "Tata",
+      "model": "Punch.ev",
+      "variant": "Adventure 40",
+      "body_type": "SUV",
+      "pricing_type": "battery included",
+      "price_status": "verified"
+    },
+    {
+      "variant_key": "TATA-NEXONEV-CREATIVE45-45",
+      "name": "Nexon.ev Creative 45",
+      "brand": "Tata",
+      "model": "Nexon.ev",
+      "variant": "Creative 45",
+      "body_type": "SUV",
+      "pricing_type": "battery included",
+      "price_status": "verified"
+    },
+    {
+      "variant_key": "TATA-CURVVEV-ACCOMPLISHEDX55-55",
+      "name": "Curvv.ev Accomplished X 55",
+      "brand": "Tata",
+      "model": "Curvv.ev",
+      "variant": "Accomplished X 55",
+      "body_type": "SUV coupé",
+      "pricing_type": "battery included",
+      "price_status": "verified"
+    }
+  ],
+  "winners": [
+    {
+      "category": "price",
+      "label": "Lowest price",
+      "variant_key": "TATA-PUNCHEV-ADVENTURE40-40",
+      "text": "Punch.ev Adventure 40 has the lowest price at ₹11.94 lakh, ₹2.40 lakh less than Nexon.ev Creative 45."
+    },
+    {
+      "category": "cost_5yr",
+      "label": "Lowest 5-year cost",
+      "variant_key": "TATA-PUNCHEV-ADVENTURE40-40",
+      "text": "Punch.ev Adventure 40 has the lowest estimated 5-year cost, about ₹2.88 lakh less than Nexon.ev Creative 45 (default assumptions)."
+    },
+    {
+      "category": "range",
+      "label": "Longest range",
+      "variant_key": "TATA-CURVVEV-ACCOMPLISHEDX55-55",
+      "text": "Curvv.ev Accomplished X 55 goes furthest, 15 km more than Nexon.ev Creative 45 (independently tested)."
+    },
+    {
+      "category": "efficiency",
+      "label": "Most efficient",
+      "variant_key": "TATA-NEXONEV-CREATIVE45-45",
+      "text": "Nexon.ev Creative 45 is the most efficient at 7.79 km/kWh, 0.18 km/kWh more than Punch.ev Adventure 40 (independent test)."
+    },
+    {
+      "category": "safety",
+      "label": "Highest crash-test score",
+      "variant_key": "TATA-PUNCHEV-ADVENTURE40-40",
+      "text": "Punch.ev Adventure 40 has the higher Bharat NCAP adult score (31.09/32 against 30.81/32 for Curvv.ev Accomplished X 55)."
+    },
+    {
+      "category": "dc_charging",
+      "label": "Fastest DC charging",
+      "variant_key": "TATA-CURVVEV-ACCOMPLISHEDX55-55",
+      "text": "Curvv.ev Accomplished X 55 charges fastest on a DC fast charger, 57.8 kW on average against 56 kW for Punch.ev Adventure 40 (estimates)."
+    },
+    {
+      "category": "boot",
+      "label": "Biggest boot",
+      "variant_key": "TATA-CURVVEV-ACCOMPLISHEDX55-55",
+      "text": "Curvv.ev Accomplished X 55 has the biggest boot, 500 L, 134 L more than Punch.ev Adventure 40."
+    },
+    {
+      "category": "seats",
+      "label": "Most seats",
+      "variant_key": null,
+      "text": "Punch.ev Adventure 40, Nexon.ev Creative 45 and Curvv.ev Accomplished X 55 are level, so there is no single leader."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Price and cost",
+      "rows": [
+        {
+          "key": "price",
+          "label": "Price (ex-showroom)",
+          "cells": [
+            {
+              "text": "₹11.94 lakh (verified)",
+              "state": "stated",
+              "best": true
+            },
+            {
+              "text": "₹14.34 lakh (verified)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "₹17.19 lakh (verified)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "pricing_type",
+          "label": "How the battery is sold",
+          "cells": [
+            {
+              "text": "Battery included",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Battery included",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Battery included",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "cost_5yr",
+          "label": "5-year cost to own",
+          "cells": [
+            {
+              "text": "~₹12.84 lakh (default assumptions)",
+              "state": "stated",
+              "best": true
+            },
+            {
+              "text": "~₹15.72 lakh (default assumptions)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "~₹18.72 lakh (default assumptions)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "running_cost",
+          "label": "Running cost per km",
+          "cells": [
+            {
+              "text": "₹1.24/km",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "₹1.21/km",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "₹1.42/km",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "charger",
+          "label": "Home wall charger",
+          "cells": [
+            {
+              "text": "Included (3.3 kW)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Not confirmed by maker; about ₹50,000 assumed",
+              "state": "not_stated",
+              "best": false
+            },
+            {
+              "text": "Not confirmed by maker; about ₹50,000 assumed",
+              "state": "not_stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Range and charging",
+      "rows": [
+        {
+          "key": "range",
+          "label": "Range",
+          "cells": [
+            {
+              "text": "304 km (independent test)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "350 km (independent test)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "365 km (independent test)",
+              "state": "stated",
+              "best": true
+            }
+          ]
+        },
+        {
+          "key": "efficiency",
+          "label": "Efficiency",
+          "cells": [
+            {
+              "text": "7.61 km/kWh (independent test)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "7.79 km/kWh (independent test)",
+              "state": "stated",
+              "best": true
+            },
+            {
+              "text": "6.64 km/kWh (independent test)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "battery",
+          "label": "Battery size",
+          "cells": [
+            {
+              "text": "40 kWh",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "45 kWh",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "55 kWh",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "dc",
+          "label": "DC fast charging",
+          "cells": [
+            {
+              "text": "56 kW avg, about 14 min to add 100 km",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "47.2 kW avg, about 16 min to add 100 km",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "57.8 kW avg, about 16 min to add 100 km",
+              "state": "stated",
+              "best": true
+            }
+          ]
+        },
+        {
+          "key": "warranty",
+          "label": "Battery warranty",
+          "cells": [
+            {
+              "text": "Lifetime (1st owner)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Lifetime (1st owner)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Lifetime (1st owner)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Safety",
+      "rows": [
+        {
+          "key": "ncap",
+          "label": "Crash test (adult)",
+          "cells": [
+            {
+              "text": "31.09/32 adult (Bharat NCAP, covers this version)",
+              "state": "stated",
+              "best": true
+            },
+            {
+              "text": "29.86/32 adult (Bharat NCAP, covers this version)",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "30.81/32 adult (Bharat NCAP, covers this version)",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "airbags",
+          "label": "Airbags",
+          "cells": [
+            {
+              "text": "6",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "6",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "6",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "esp",
+          "label": "Stability control (ESP)",
+          "cells": [
+            {
+              "text": "Yes",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Yes",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Yes",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "adas",
+          "label": "Driver assistance (ADAS)",
+          "cells": [
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "camera",
+          "label": "Parking camera",
+          "cells": [
+            {
+              "text": "Rear camera only",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Rear camera only",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "360 degree camera",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Comfort and features",
+      "rows": [
+        {
+          "key": "sunroof",
+          "label": "Sunroof",
+          "cells": [
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Panoramic",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "ventilated",
+          "label": "Ventilated front seats",
+          "cells": [
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "No",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "Passive cooling only",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "adaptive",
+          "label": "Adaptive suspension",
+          "cells": [
+            {
+              "text": "Not stated by maker",
+              "state": "not_stated",
+              "best": false
+            },
+            {
+              "text": "Not stated by maker",
+              "state": "not_stated",
+              "best": false
+            },
+            {
+              "text": "Not stated by maker",
+              "state": "not_stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "drive",
+          "label": "Drive",
+          "cells": [
+            {
+              "text": "FWD",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "FWD",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "FWD",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Space and ground",
+      "rows": [
+        {
+          "key": "seats",
+          "label": "Seats",
+          "cells": [
+            {
+              "text": "5",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "5",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "5",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        },
+        {
+          "key": "boot",
+          "label": "Boot",
+          "cells": [
+            {
+              "text": "366 L",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "350 L",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "500 L",
+              "state": "stated",
+              "best": true
+            }
+          ]
+        },
+        {
+          "key": "clearance",
+          "label": "Ground clearance",
+          "cells": [
+            {
+              "text": "195 mm",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "190 mm",
+              "state": "stated",
+              "best": false
+            },
+            {
+              "text": "186 mm",
+              "state": "stated",
+              "best": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "We do not pick an overall winner. The right car depends on what matters to you; these are the facts and where each car leads.",
+    "Running cost and 5-year cost use our default assumptions (charging mostly at home at about ₹9.4 per kWh, 40 km a day for 5 years). They exclude insurance, registration, service, resale and offers. Your own numbers will differ."
+  ],
+  "watch_outs": [
+    {
+      "variant_key": "TATA-PUNCHEV-ADVENTURE40-40",
+      "items": [
+        "Tested range only 65% of claim"
+      ]
+    },
+    {
+      "variant_key": "TATA-NEXONEV-CREATIVE45-45",
+      "items": [
+        "Wall charger not in price (~₹50,000)"
+      ]
+    },
+    {
+      "variant_key": "TATA-CURVVEV-ACCOMPLISHEDX55-55",
+      "items": [
+        "Wall charger not in price (~₹50,000)"
+      ]
+    }
+  ],
+  "disclaimer": "This recommendation is based on publicly available data as of the dataset release date. Prices are ex-showroom and exclude registration, insurance, offers and financing. Verify all details with the dealer before purchasing."
+}

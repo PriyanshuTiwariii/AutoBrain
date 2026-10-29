@@ -91,3 +91,16 @@ for name, known in {"questions-budget": {}, "questions-optional": _FULL}.items()
         json.dumps(next_question(known, [], ds.variants), indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
     )
     print(f"wrote {name}.json")
+
+
+# --- /compare responses: real engine output, for the website's tests -------------------------------------------------
+from app.compare import compare_cars  # noqa: E402
+
+_bought = [v for v in ds.variants if v.pricing_type == "battery included"]
+_three = [next(v for v in _bought if v.model == m) for m in ("Punch.ev", "Nexon.ev", "Curvv.ev")]
+_baas = next(v for v in ds.variants if v.pricing_type == "BaaS" and v.price_status == "verified")
+_same = next(v for v in _bought if v.model == _baas.model)
+for name, cars in {"compare-three": _three, "compare-baas": [_baas, _same]}.items():
+    payload = compare_cars([c.variant_key for c in cars], ds.variants, ds.version)
+    (out / f"{name}.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"wrote {name}.json")

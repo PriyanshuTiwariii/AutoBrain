@@ -1,4 +1,4 @@
-# Guided intake (`/start`)
+# Guided intake (`/find`)
 
 A buyer with no car knowledge describes their life; the system asks easy follow-ups until it can recommend.
 
@@ -25,7 +25,7 @@ Buyer text (optional) -> /extract (LLM call 1) -> known Needs -> /next_question 
 
 ## Files
 - Engine: `engine/app/questions.py`, route in `engine/app/main.py`, contracts `contracts/questions.*.schema.json`.
-- Web: `web/app/start/page.tsx`, `web/components/chat/Helpers.tsx`, `web/lib/guided.ts`, `web/app/api/next-question/route.ts`.
-- The old full form: `web/app/start/advanced/page.tsx`.
+- Web: `web/app/find/page.tsx`, `web/components/chat/Helpers.tsx`, `web/lib/guided.ts`, `web/app/api/next-question/route.ts`.
+- The old full form: `web/app/find/advanced/page.tsx`. The screens before it: `/start` (electric or not) and `/start/ev` (find or compare); comparison is `/compare` (see `docs/HOW_IT_WORKS.md` section 13).
 - Tests: `engine/tests/test_questions.py`, `web/tests/guided.test.ts`, `web/tests/next-question-route.test.ts`.
   Web fixtures come from the engine: `python engine/scripts/make_web_fixtures.py`.

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import PrintButton from "@/components/PrintButton";
 import ResultView from "@/components/ResultView";
+import { compareHref } from "@/lib/compare";
 import { getVisitId, loadResult } from "@/lib/storage";
 import type { Result } from "@/lib/types";
 
@@ -16,10 +17,20 @@ export default function ResultsPage() {
     setState({ result: loadResult(), visitId: getVisitId() });
   }, []);
 
+  const shortlisted =
+    state !== "loading" && state.result
+      ? [...new Set(state.result.slots.filter((s) => s.slot !== "not_recommended").map((s) => s.variant_key))].slice(0, 3)
+      : [];
+
   const nav = (
     <>
+      {shortlisted.length >= 2 ? (
+        <Link href={compareHref(shortlisted)} className="btn btn-ghost !rounded-[10px]">
+          Compare these cars
+        </Link>
+      ) : null}
       <Link
-        href="/start?edit=1"
+        href="/find?edit=1"
         className="btn btn-ghost !rounded-[10px]"
       >
         Edit my needs

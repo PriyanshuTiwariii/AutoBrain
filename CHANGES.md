@@ -181,7 +181,7 @@ New optional Needs field: `city_highway` (default, changes nothing), `rough_road
 
 ## Guided intake: plain-language follow-ups (`/start`)
 
-`/start` is now a short conversation instead of the 9-field form. The old form moved to `/start/advanced`.
+The finder at `/find` (it was `/start`) is now a short conversation instead of the 9-field form. The old form moved to `/find/advanced`. The new `/start` is the first screen (see the next section). "Edit my needs" opens `/find?edit=1`; a normal visit to `/find` always starts empty.
 `contracts/needs.schema.json` and `contracts/result.schema.json` are unchanged. See `docs/GUIDED_FLOW.md`.
 
 - **New contracts:** `questions.request.schema.json` and `questions.response.schema.json` (`POST /next_question`).
@@ -201,6 +201,22 @@ New optional Needs field: `city_highway` (default, changes nothing), `rough_road
   shown as "assumed"); the Result now says so in words instead of leaving it implicit. See `docs/HOW_IT_WORKS.md` section 10
   for every assumption in the project.
 - Typing in the first box uses the existing `/extract` (LLM call 1). With the LLM off, the same questions run as a stepper.
+
+## Product flow and car comparison
+
+- **New first screens:** `/start` asks "What kind of car?": Electric goes on, Petrol or diesel says plainly that it is not covered yet.
+  `/start/ev` then offers "Find the right EV for me" (`/find`) or "Compare EVs I have shortlisted" (`/compare`). The landing headline no
+  longer names Tata and Mahindra, as more brands will follow (the disclaimer and page title still do, because the data is only those two today).
+- **New contracts:** `compare.request.schema.json`, `compare.response.schema.json`, `cars.response.schema.json`.
+- **New routes (pure engine, no LLM):** `GET /cars` (every variant in the release, for the pickers) and `POST /compare` (two or three variant keys).
+- **Comparison rules** (`engine/app/compare.py`): facts straight from the data; unknown shows as "Not stated by maker"; price status, efficiency
+  basis and crash-test status shown with their values; watch-outs always shown. Category winners only when the figures are like for like:
+  BaaS price is never compared with a battery-included price and no 5-year cost is compared when a BaaS car is included; a tested range is
+  never compared with a maker figure (nor an independent efficiency test with a maker estimate); a pending price never wins; a car with no
+  Bharat NCAP rating is named, not marked worse; ties have no winner. There is no overall winner.
+- **Pickers:** brand, model, variant dropdowns from the release; BaaS versions hidden unless ticked; two or three cars; the URL
+  (`/compare?cars=a,b`) is shareable. The results page has a "Compare these cars" button.
+- Fixtures for the web tests now include `compare-three.json` and `compare-baas.json` (`python engine/scripts/make_web_fixtures.py`).
 
 ## Later
 
